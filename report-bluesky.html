@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BlueSky Ransomware | John Mark Piedad</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0a0a0a;--surface:#111;--card:#141414;--border:#2a2a2a;--gold:#f0b429;--gold-bg:rgba(240,180,41,0.08);--gold-border:rgba(240,180,41,0.25);--text:#e8e8e8;--muted:#888;--muted2:#555;--white:#fff;--grid:rgba(255,255,255,0.025)}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-weight:400;line-height:1.7;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:60px 60px;pointer-events:none;z-index:0}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;justify-content:space-between;align-items:center;padding:1rem 2.5rem;background:rgba(10,10,10,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+.nav-brand{display:flex;align-items:center;gap:.6rem;text-decoration:none}.nav-brand svg{width:22px;height:22px}.nav-brand-text{font-size:14px;font-weight:700;color:var(--white);letter-spacing:.05em}
+.nav-back{font-size:13px;font-weight:500;color:var(--muted);text-decoration:none;display:flex;align-items:center;gap:.4rem;transition:color .2s}.nav-back:hover{color:var(--gold)}.nav-back svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2}
+.hero{padding:8rem 2rem 4rem;max-width:900px;margin:0 auto;position:relative;z-index:1}
+.breadcrumb{font-size:12px;color:var(--muted2);margin-bottom:1.5rem;display:flex;align-items:center;gap:.5rem}.breadcrumb a{color:var(--muted);text-decoration:none;transition:color .2s}.breadcrumb a:hover{color:var(--gold)}.breadcrumb span{color:var(--muted2)}
+.report-badge{display:inline-flex;align-items:center;gap:.5rem;font-size:11px;font-weight:700;letter-spacing:.08em;padding:.3rem .9rem;border-radius:3px;margin-bottom:1.25rem;background:rgba(239,68,68,0.1);color:#ef4444;border:1px solid rgba(239,68,68,0.25)}.badge-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+h1{font-size:clamp(1.8rem,4vw,2.8rem);font-weight:800;color:var(--white);line-height:1.15;margin-bottom:1rem}h1 span{color:var(--gold)}
+.hero-underline{width:60px;height:2px;background:var(--gold);margin-bottom:1.5rem}
+.meta-row{display:flex;flex-wrap:wrap;gap:.75rem;margin-bottom:2rem}
+.meta-pill{font-size:12px;font-weight:500;padding:.3rem .85rem;border-radius:20px;border:1px solid var(--border);color:var(--muted);background:var(--card)}.meta-pill.platform{color:var(--gold);border-color:var(--gold-border);background:var(--gold-bg)}.meta-pill.ransom{color:#ef4444;border-color:rgba(239,68,68,0.3);background:rgba(239,68,68,0.08)}
+.content{max-width:900px;margin:0 auto;padding:0 2rem 6rem;position:relative;z-index:1}
+.section{margin-bottom:2.5rem}
+.section-title{font-size:13px;font-weight:700;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;margin-bottom:1rem;display:flex;align-items:center;gap:.6rem}.section-title::before{content:'';display:inline-block;width:16px;height:1px;background:var(--gold)}
+h3{font-size:.95rem;font-weight:600;color:var(--gold);margin:1.25rem 0 .5rem}
+p{font-size:.9rem;color:var(--muted);line-height:1.85;margin-bottom:.85rem}p strong{color:var(--text);font-weight:600}
+.summary-box{background:var(--card);border:1px solid var(--border);border-left:3px solid #ef4444;border-radius:6px;padding:1.5rem;margin-bottom:2rem}.summary-box p{margin:0;font-size:.92rem;line-height:1.85;color:var(--text)}
+table{width:100%;border-collapse:collapse;margin-bottom:1.5rem;font-size:.85rem;background:var(--card);border:1px solid var(--border);border-radius:6px;overflow:hidden}
+th{text-align:left;font-size:11px;font-weight:700;color:var(--muted2);letter-spacing:.08em;text-transform:uppercase;padding:.6rem 1rem;border-bottom:1px solid var(--border);background:var(--surface)}
+td{padding:.65rem 1rem;border-bottom:1px solid rgba(42,42,42,0.5);color:var(--muted);vertical-align:top}td:first-child{color:var(--text);font-weight:500;white-space:nowrap}tr:last-child td{border-bottom:none}
+.verdict-cell{font-weight:600}.verdict-m{color:#ef4444}
+code{font-family:'Courier New',monospace;background:var(--surface);border:1px solid var(--border);border-radius:4px;font-size:.82rem;padding:.15rem .5rem;color:var(--gold)}
+pre{font-family:'Courier New',monospace;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:1.25rem;overflow-x:auto;line-height:1.7;margin-bottom:1.5rem;color:var(--text);font-size:.82rem}
+.flow-box{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:1.5rem;margin-bottom:1.5rem}.flow-box pre{background:none;border:none;padding:0;margin:0;color:var(--text)}
+.mitre-tag{display:inline-block;font-size:11px;font-weight:600;padding:.2rem .6rem;background:var(--gold-bg);color:var(--gold);border:1px solid var(--gold-border);border-radius:3px;margin:.2rem .2rem 0 0}
+.chain-steps{display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.5rem;counter-reset:step}
+.chain-step{display:flex;align-items:flex-start;gap:1rem;padding:1rem 1.25rem;background:var(--card);border:1px solid var(--border);border-radius:6px;counter-increment:step;transition:border-color .2s}
+.chain-step:hover{border-color:var(--gold-border)}
+.step-num{min-width:28px;height:28px;border-radius:50%;background:var(--gold-bg);border:1px solid var(--gold-border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--gold);flex-shrink:0}
+.step-content{}
+.step-title{font-size:.9rem;font-weight:600;color:var(--text);margin-bottom:.2rem}
+.step-desc{font-size:.82rem;color:var(--muted);line-height:1.6}
+.step-tag{display:inline-block;font-size:10px;font-weight:600;padding:.1rem .5rem;background:rgba(239,68,68,0.1);color:#ef4444;border:1px solid rgba(239,68,68,0.25);border-radius:2px;margin-bottom:.3rem}
+.rec-list{list-style:none;display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.5rem}.rec-list li{display:flex;align-items:flex-start;gap:.75rem;font-size:.88rem;color:var(--muted);padding:.6rem .9rem;background:var(--card);border:1px solid var(--border);border-radius:4px}.rec-list li::before{content:'→';color:var(--gold);font-weight:700;flex-shrink:0}
+.learning-list{list-style:none;display:flex;flex-direction:column;gap:.75rem;margin-bottom:1.5rem}.learning-list li{padding:1rem 1.25rem;background:var(--card);border:1px solid var(--border);border-left:2px solid var(--gold);border-radius:0 4px 4px 0;font-size:.88rem;color:var(--muted);line-height:1.75}.learning-list li strong{color:var(--text);display:block;margin-bottom:.2rem}
+.gallery-link-btn{display:inline-flex;align-items:center;gap:.6rem;font-size:13px;font-weight:600;padding:.65rem 1.4rem;border-radius:6px;border:1.5px solid var(--gold);color:var(--gold);background:var(--gold-bg);text-decoration:none;transition:all .2s;margin-bottom:2rem}
+.gallery-link-btn:hover{background:var(--gold);color:#000}
+footer{border-top:1px solid var(--border);padding:2rem;text-align:center;position:relative;z-index:1}footer p{font-size:13px;color:var(--muted2)}footer a{color:var(--gold);text-decoration:none}
+@media(max-width:700px){nav{padding:1rem 1.5rem}.hero,.content{padding-left:1.25rem;padding-right:1.25rem}td:first-child{white-space:normal}}
+
+.gallery-link-btn{display:inline-flex;align-items:center;gap:.6rem;font-size:13px;font-weight:600;padding:.65rem 1.4rem;border-radius:6px;border:1.5px solid var(--gold);color:var(--gold);background:var(--gold-bg);text-decoration:none;transition:all .2s;margin-bottom:2rem}
+.gallery-link-btn:hover{background:var(--gold);color:#000}
+</style>
+</head>
+<body>
+<nav>
+  <a class="nav-brand" href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="#f0b429" stroke-width="1.8"><path d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V7L12 2z"/></svg><span class="nav-brand-text">JOHN MARK</span></a>
+  <a class="nav-back" href="index.html#labs"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back to Labs</a>
+</nav>
+
+<div class="hero">
+  <div class="breadcrumb"><a href="index.html">Home</a><span>/</span><a href="index.html#labs">Labs</a><span>/</span><span>CD-BlueSky</span></div>
+  <div class="report-badge"><span class="badge-dot"></span>RANSOMWARE INVESTIGATION</div>
+  <h1>BlueSky Ransomware —<br><span>Full Attack Chain Analysis</span></h1>
+  <div class="hero-underline"></div>
+  <div class="meta-row">
+    <span class="meta-pill platform">CyberDefender</span>
+    <span class="meta-pill ransom">Ransomware</span>
+    <span class="meta-pill">PCAP Analysis</span>
+    <span class="meta-pill">EVTX Logs</span>
+    <span class="meta-pill">Wireshark</span>
+    <span class="meta-pill">CyberChef</span>
+    <span class="meta-pill">ANY.RUN</span>
+  </div>
+</div>
+
+<div class="content">
+  <a href="gallery-bluesky.html" class="gallery-link-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>View Walkthrough Screenshots (44)</a>
+
+  <div class="section">
+    <div class="section-title">Summary</div>
+    <div class="summary-box">
+      <p>A complete ransomware attack chain was reconstructed using <strong>PCAP network traffic</strong> and <strong>Windows EVTX event logs</strong>. The attacker began with active port scanning, identified an exposed MSSQL server, authenticated with valid credentials, enabled xp_cmdshell for RCE, escalated privileges via process injection into winlogon.exe, disabled Windows Defender, established persistence via scheduled task, dumped credentials, mapped the network, and finally deployed <strong>BlueSky ransomware</strong> (javaw.exe) — resulting in file encryption and ransom note creation.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Artifacts Analyzed</div>
+    <table>
+      <tr><th>Artifact</th><th>Type</th><th>Tool Used</th></tr>
+      <tr><td>Network capture</td><td>PCAP</td><td>Wireshark</td></tr>
+      <tr><td>Windows event logs</td><td>EVTX</td><td>Event Log Viewer</td></tr>
+      <tr><td>Encoded commands</td><td>Base64</td><td>CyberChef</td></tr>
+      <tr><td>Ransomware payload</td><td>EXE (external)</td><td>ANY.RUN sandbox</td></tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Indicators of Compromise</div>
+    <table>
+      <tr><th>Type</th><th>Value</th><th>Context</th></tr>
+      <tr><td>C2 / Payload server</td><td>87.96.21.84</td><td class="verdict-cell verdict-m">Payload delivery</td></tr>
+      <tr><td>Malicious script</td><td><code>hxxp://87.96.21.84/checking.ps1</code></td><td>Defender disable</td></tr>
+      <tr><td>Malicious script</td><td><code>hxxp://87.96.21.84/del.ps1</code></td><td>Defense evasion</td></tr>
+      <tr><td>Ransomware payload</td><td><code>hxxp://87.96.21.84/javaw.exe</code></td><td class="verdict-cell verdict-m">BlueSky ransomware</td></tr>
+      <tr><td>Credential dump</td><td>hashes.txt</td><td>Via Invoke-PowerDump.ps1</td></tr>
+      <tr><td>Host discovery</td><td>extracted_hosts.txt</td><td>Network recon results</td></tr>
+      <tr><td>Scheduled task</td><td>\Microsoft\Windows\MUI\LPUpdate</td><td>Persistence</td></tr>
+      <tr><td>Injected process</td><td>winlogon.exe</td><td>Privilege escalation + C2</td></tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Attack Chain Reconstruction</div>
+    <div class="chain-steps">
+      <div class="chain-step"><div class="step-num">1</div><div class="step-content"><div class="step-tag">RECONNAISSANCE</div><div class="step-title">Port Scanning</div><div class="step-desc">Wireshark filter <code>tcp.flags.syn == 1</code> revealed TCP SYN requests across multiple ports. Protocol Hierarchy showed TDS traffic — MSSQL server identified as target.</div></div></div>
+      <div class="chain-step"><div class="step-num">2</div><div class="step-content"><div class="step-tag">INITIAL ACCESS</div><div class="step-title">MSSQL Credential Abuse</div><div class="step-desc">TDS filter located a TDS7 login packet with valid credentials used to authenticate to the MSSQL server. Confirmed using valid account abuse as initial access vector.</div></div></div>
+      <div class="chain-step"><div class="step-num">3</div><div class="step-content"><div class="step-tag">EXECUTION</div><div class="step-title">xp_cmdshell Enabled</div><div class="step-desc">Attacker executed SQL commands to enable xp_cmdshell — turning the database into a remote code execution engine. Confirmed in both PCAP and EVTX logs (dual-source validation).<br><br><pre style="margin:0;padding:.75rem;font-size:.78rem">EXEC sp_configure 'xp_cmdshell', 1; RECONFIGURE;</pre></div></div></div>
+      <div class="chain-step"><div class="step-num">4</div><div class="step-content"><div class="step-tag">PRIVILEGE ESCALATION</div><div class="step-title">Process Injection → winlogon.exe</div><div class="step-desc">PowerShell EVTX logs confirmed process injection into winlogon.exe — a SYSTEM-level process that's always running, giving the attacker SYSTEM privileges and a persistent C2 channel.</div></div></div>
+      <div class="chain-step"><div class="step-num">5</div><div class="step-content"><div class="step-tag">DEFENSE EVASION</div><div class="step-title">Windows Defender Disabled</div><div class="step-desc">HTTP filter GET revealed checking.ps1 download. Stream analysis showed it checked Group SID and modified registry keys to disable Windows Defender. del.ps1 provided additional evasion.</div></div></div>
+      <div class="chain-step"><div class="step-num">6</div><div class="step-content"><div class="step-tag">PERSISTENCE</div><div class="step-title">Scheduled Task Created</div><div class="step-desc">Filter <code>http contains "schtasks"</code> + TCP stream follow revealed full task name: <code>\Microsoft\Windows\MUI\LPUpdate</code> — disguised as a legitimate Windows path.</div></div></div>
+      <div class="chain-step"><div class="step-num">7</div><div class="step-content"><div class="step-tag">CREDENTIAL ACCESS</div><div class="step-title">Invoke-PowerDump.ps1</div><div class="step-desc">Stream analysis revealed Invoke-PowerDump.ps1 usage. An EncodedCommand was decoded via CyberChef (Base64) — output file identified as <code>hashes.txt</code> containing dumped credential hashes.</div></div></div>
+      <div class="chain-step"><div class="step-num">8</div><div class="step-content"><div class="step-tag">DISCOVERY</div><div class="step-title">Network Host Enumeration</div><div class="step-desc">Stream analysis revealed <code>extracted_hosts.txt</code> — a list of internal systems discovered, indicating preparation for lateral movement.</div></div></div>
+      <div class="chain-step"><div class="step-num">9</div><div class="step-content"><div class="step-tag">IMPACT</div><div class="step-title">BlueSky Ransomware Deployed</div><div class="step-desc">Filter <code>http contains ".exe"</code> identified javaw.exe download from 87.96.21.84. Initially clean on VirusTotal/Talos — only ANY.RUN sandbox confirmed it as BlueSky ransomware, resulting in file encryption and ransom note creation.</div></div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Attack Flow</div>
+    <div class="flow-box">
+      <pre>Port scan → MSSQL server identified
+        ↓
+TDS7 login with valid credentials (Initial Access)
+        ↓
+xp_cmdshell enabled → Remote command execution via SQL
+        ↓
+Process injection into winlogon.exe (Privilege Escalation)
+        ↓
+checking.ps1 + del.ps1 → Windows Defender disabled
+        ↓
+\Microsoft\Windows\MUI\LPUpdate scheduled task created (Persistence)
+        ↓
+Invoke-PowerDump.ps1 → hashes.txt (Credential Dumping)
+        ↓
+extracted_hosts.txt → Internal network mapped (Discovery)
+        ↓
+javaw.exe downloaded → BlueSky ransomware deployed
+        ↓
+Files encrypted + ransom note created (Impact)</pre>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">MITRE ATT&CK Mapping</div>
+    <table>
+      <tr><th>Technique ID</th><th>Name</th><th>Evidence</th></tr>
+      <tr><td><span class="mitre-tag">T1595</span></td><td>Active Scanning</td><td>TCP SYN port scan in PCAP</td></tr>
+      <tr><td><span class="mitre-tag">T1078</span></td><td>Valid Accounts</td><td>MSSQL TDS7 login with valid credentials</td></tr>
+      <tr><td><span class="mitre-tag">T1059.001</span></td><td>PowerShell</td><td>checking.ps1 and del.ps1 execution</td></tr>
+      <tr><td><span class="mitre-tag">T1055</span></td><td>Process Injection</td><td>Injection into winlogon.exe</td></tr>
+      <tr><td><span class="mitre-tag">T1562.001</span></td><td>Disable Security Tools</td><td>Registry changes disabling Windows Defender</td></tr>
+      <tr><td><span class="mitre-tag">T1053.005</span></td><td>Scheduled Task</td><td>\Microsoft\Windows\MUI\LPUpdate</td></tr>
+      <tr><td><span class="mitre-tag">T1003</span></td><td>OS Credential Dumping</td><td>Invoke-PowerDump.ps1 → hashes.txt</td></tr>
+      <tr><td><span class="mitre-tag">T1018</span></td><td>Remote System Discovery</td><td>extracted_hosts.txt</td></tr>
+      <tr><td><span class="mitre-tag">T1071.001</span></td><td>Web Protocols</td><td>HTTP C2 communication with 87.96.21.84</td></tr>
+      <tr><td><span class="mitre-tag">T1486</span></td><td>Data Encrypted for Impact</td><td>BlueSky ransomware file encryption + ransom note</td></tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Key Learnings</div>
+    <ul class="learning-list">
+      <li><strong>PCAP + EVTX correlation is powerful.</strong> The same SQL commands appeared in both network traffic and event logs — dual-source confirmation removes all doubt.</li>
+      <li><strong>xp_cmdshell is a critical MSSQL hardening target.</strong> When enabled, it turns a database into a full RCE platform. It should always be disabled in production environments.</li>
+      <li><strong>TI can miss new ransomware samples.</strong> javaw.exe was clean on VirusTotal and Cisco Talos initially — only ANY.RUN sandbox confirmed it as BlueSky. Never rely on a single clean verdict for executables.</li>
+      <li><strong>Wireshark filters are essential for efficiency.</strong> tcp.flags.syn==1, tds, http.request.method=="GET", and http contains "schtasks" dramatically narrowed relevant traffic in a large PCAP.</li>
+      <li><strong>Base64 encoding is a common obfuscation technique.</strong> Decoding attacker commands with CyberChef is a fundamental analyst skill for uncovering what malicious scripts are actually doing.</li>
+      <li><strong>Reconstructing the full attack chain matters.</strong> Understanding how each stage connects — from port scan to ransomware — separates reactive alert handling from proactive incident response.</li>
+    </ul>
+  </div>
+</div>
+
+<footer><p>John Mark Piedad · <a href="index.html">Back to Portfolio</a></p></footer>
+<a href="https://github.com/piedad-johnmark/portfolio-projects/blob/781fe7ddf80f2370d224f800335cbb2796f97c69/cyberdefender-labs/bluesky-ransomware-analysis.md" target="_blank" style="position:fixed;bottom:2rem;right:2rem;z-index:200;display:flex;align-items:center;gap:.6rem;background:#f0b429;color:#000;font-family:Inter,sans-serif;font-size:13px;font-weight:700;padding:.7rem 1.25rem;border-radius:6px;text-decoration:none;box-shadow:0 4px 20px rgba(240,180,41,0.3);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>View on GitHub</a>
+</body>
+</html>

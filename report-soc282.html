@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SOC282 — Phishing Alert | John Mark Piedad</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0a0a0a;--surface:#111;--card:#141414;--border:#2a2a2a;--gold:#f0b429;--gold-light:#f5c842;--gold-bg:rgba(240,180,41,0.08);--gold-border:rgba(240,180,41,0.25);--text:#e8e8e8;--muted:#888;--muted2:#555;--white:#fff;--green:#22c55e;--green-bg:rgba(34,197,94,0.1);--red:#ef4444;--red-bg:rgba(239,68,68,0.1);--grid:rgba(255,255,255,0.025)}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-weight:400;line-height:1.7;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:60px 60px;pointer-events:none;z-index:0}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;justify-content:space-between;align-items:center;padding:1rem 2.5rem;background:rgba(10,10,10,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+.nav-brand{display:flex;align-items:center;gap:.6rem;text-decoration:none}
+.nav-brand svg{width:22px;height:22px}
+.nav-brand-text{font-size:14px;font-weight:700;color:var(--white);letter-spacing:.05em}
+.nav-back{font-size:13px;font-weight:500;color:var(--muted);text-decoration:none;display:flex;align-items:center;gap:.4rem;transition:color .2s}
+.nav-back:hover{color:var(--gold)}
+.nav-back svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2}
+.hero{padding:8rem 2rem 4rem;max-width:900px;margin:0 auto;position:relative;z-index:1}
+.breadcrumb{font-size:12px;color:var(--muted2);margin-bottom:1.5rem;display:flex;align-items:center;gap:.5rem}
+.breadcrumb a{color:var(--muted);text-decoration:none;transition:color .2s}
+.breadcrumb a:hover{color:var(--gold)}
+.breadcrumb span{color:var(--muted2)}
+.report-badge{display:inline-flex;align-items:center;gap:.5rem;font-size:11px;font-weight:700;letter-spacing:.08em;padding:.3rem .9rem;border-radius:3px;margin-bottom:1.25rem}
+.badge-tp{background:var(--gold-bg);color:var(--gold);border:1px solid var(--gold-border)}
+.badge-fp{background:rgba(90,90,90,0.15);color:var(--muted);border:1px solid var(--border)}
+.badge-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+h1{font-size:clamp(1.8rem,4vw,2.8rem);font-weight:800;color:var(--white);line-height:1.15;margin-bottom:1rem}
+h1 span{color:var(--gold)}
+.hero-underline{width:60px;height:2px;background:var(--gold);margin-bottom:1.5rem}
+.meta-row{display:flex;flex-wrap:wrap;gap:.75rem;margin-bottom:2rem}
+.meta-pill{font-size:12px;font-weight:500;padding:.3rem .85rem;border-radius:20px;border:1px solid var(--border);color:var(--muted);background:var(--card)}
+.meta-pill.high{color:#f97316;border-color:rgba(249,115,22,0.3);background:rgba(249,115,22,0.08)}
+.meta-pill.platform{color:var(--gold);border-color:var(--gold-border);background:var(--gold-bg)}
+.content{max-width:900px;margin:0 auto;padding:0 2rem 6rem;position:relative;z-index:1}
+.section{margin-bottom:2.5rem}
+.section-title{font-size:13px;font-weight:700;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;margin-bottom:1rem;display:flex;align-items:center;gap:.6rem}
+.section-title::before{content:'';display:inline-block;width:16px;height:1px;background:var(--gold)}
+h2{font-size:1.1rem;font-weight:700;color:var(--white);margin:1.75rem 0 .75rem}
+h3{font-size:.95rem;font-weight:600;color:var(--gold);margin:1.25rem 0 .5rem}
+p{font-size:.9rem;color:var(--muted);line-height:1.85;margin-bottom:.85rem}
+p strong{color:var(--text);font-weight:600}
+.summary-box{background:var(--card);border:1px solid var(--border);border-left:3px solid var(--gold);border-radius:6px;padding:1.5rem;margin-bottom:2rem}
+.summary-box p{margin:0;font-size:.92rem;line-height:1.85;color:var(--text)}
+table{width:100%;border-collapse:collapse;margin-bottom:1.5rem;font-size:.85rem}
+th{text-align:left;font-size:11px;font-weight:700;color:var(--muted2);letter-spacing:.08em;text-transform:uppercase;padding:.6rem 1rem;border-bottom:1px solid var(--border);background:var(--surface)}
+td{padding:.65rem 1rem;border-bottom:1px solid rgba(42,42,42,0.5);color:var(--muted);vertical-align:top}
+td:first-child{color:var(--text);font-weight:500;white-space:nowrap}
+tr:last-child td{border-bottom:none}
+table{background:var(--card);border:1px solid var(--border);border-radius:6px;overflow:hidden}
+.verdict-cell{font-weight:600}
+.verdict-m{color:#ef4444}
+.verdict-s{color:#f97316}
+.verdict-c{color:var(--green)}
+code,pre{font-family:'Courier New',monospace;background:var(--surface);border:1px solid var(--border);border-radius:4px;font-size:.82rem;color:var(--gold)}
+code{padding:.15rem .5rem}
+pre{padding:1.25rem;overflow-x:auto;line-height:1.7;margin-bottom:1.5rem;color:var(--text)}
+pre code{background:none;border:none;padding:0;color:var(--text)}
+.flow-box{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:1.5rem;margin-bottom:1.5rem}
+.flow-box pre{background:none;border:none;padding:0;margin:0;color:var(--text)}
+.mitre-tag{display:inline-block;font-size:11px;font-weight:600;padding:.2rem .6rem;background:var(--gold-bg);color:var(--gold);border:1px solid var(--gold-border);border-radius:3px;margin:.2rem .2rem 0 0}
+.verdict-box{background:var(--card);border:1px solid var(--gold-border);border-radius:6px;padding:1.5rem;margin-bottom:1.5rem;text-align:center}
+.verdict-box .v-label{font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--muted2);text-transform:uppercase;margin-bottom:.5rem}
+.verdict-box .v-text{font-size:1.05rem;font-weight:700;color:var(--gold)}
+.rec-list{list-style:none;display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.5rem}
+.rec-list li{display:flex;align-items:flex-start;gap:.75rem;font-size:.88rem;color:var(--muted);padding:.6rem .9rem;background:var(--card);border:1px solid var(--border);border-radius:4px}
+.rec-list li::before{content:'→';color:var(--gold);font-weight:700;flex-shrink:0;margin-top:.05rem}
+.learning-list{list-style:none;display:flex;flex-direction:column;gap:.75rem;margin-bottom:1.5rem}
+.learning-list li{padding:1rem 1.25rem;background:var(--card);border:1px solid var(--border);border-left:2px solid var(--gold);border-radius:0 4px 4px 0;font-size:.88rem;color:var(--muted);line-height:1.75}
+.learning-list li strong{color:var(--text);display:block;margin-bottom:.2rem}
+.gallery-link-btn{display:inline-flex;align-items:center;gap:.6rem;font-size:13px;font-weight:600;padding:.65rem 1.4rem;border-radius:6px;border:1.5px solid var(--gold);color:var(--gold);background:var(--gold-bg);text-decoration:none;transition:all .2s;margin-bottom:2rem}
+.gallery-link-btn:hover{background:var(--gold);color:#000}
+footer{border-top:1px solid var(--border);padding:2rem;text-align:center;position:relative;z-index:1}
+footer p{font-size:13px;color:var(--muted2)}
+footer a{color:var(--gold);text-decoration:none}
+@media(max-width:700px){nav{padding:1rem 1.5rem}.hero,.content{padding-left:1.25rem;padding-right:1.25rem}td:first-child{white-space:normal}}
+
+.gallery-link-btn{display:inline-flex;align-items:center;gap:.6rem;font-size:13px;font-weight:600;padding:.65rem 1.4rem;border-radius:6px;border:1.5px solid var(--gold);color:var(--gold);background:var(--gold-bg);text-decoration:none;transition:all .2s;margin-bottom:2rem}
+.gallery-link-btn:hover{background:var(--gold);color:#000}
+</style>
+</head>
+<body>
+<nav>
+  <a class="nav-brand" href="index.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#f0b429" stroke-width="1.8"><path d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V7L12 2z"/></svg>
+    <span class="nav-brand-text">JOHN MARK</span>
+  </a>
+  <a class="nav-back" href="index.html#labs">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    Back to Labs
+  </a>
+</nav>
+
+<div class="hero">
+  <div class="breadcrumb">
+    <a href="index.html">Home</a><span>/</span>
+    <a href="index.html#labs">Labs</a><span>/</span>
+    <span>SOC282</span>
+  </div>
+  <div class="report-badge badge-tp"><span class="badge-dot"></span>TRUE POSITIVE</div>
+  <h1>SOC282 — Phishing Alert:<br><span>Deceptive Mail Detected</span></h1>
+  <div class="hero-underline"></div>
+  <div class="meta-row">
+    <span class="meta-pill platform">LetsDefend</span>
+    <span class="meta-pill high">High Severity</span>
+    <span class="meta-pill">Phishing</span>
+    <span class="meta-pill">AsyncRAT</span>
+    <span class="meta-pill">C2 Detection</span>
+    <span class="meta-pill">EDR</span>
+  </div>
+</div>
+
+<div class="content">
+  <a href="gallery-soc282.html" class="gallery-link-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>View Walkthrough Screenshots (28)</a>
+
+  <div class="section">
+    <div class="section-title">Summary</div>
+    <div class="summary-box">
+      <p>A phishing email with the subject <strong>"Free Coffee Voucher"</strong> was delivered to user <strong><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="480e2d24213008242d3c3b2c2d2e2d262c662127">[email&#160;protected]</a></strong> (host: 172.16.20.151). The email contained a malicious ZIP attachment that, when executed, deployed <strong>Trojan.AsyncRAT/MSIL</strong> and established communication with a C2 server in Romania. The host was confirmed compromised and subsequently contained via EDR.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Alert Details</div>
+    <table>
+      <tr><th>Field</th><th>Value</th></tr>
+      <tr><td>Recipient</td><td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="adebc8c1c4d5edc1c8d9dec9c8cbc8c3c983c4c2">[email&#160;protected]</a></td></tr>
+      <tr><td>Recipient Host IP</td><td>172.16.20.151</td></tr>
+      <tr><td>Sender</td><td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="92f4e0f7f7d2f1fdf4f4f7f7e1fafdfdfde2bcf1fdff">[email&#160;protected]</a></td></tr>
+      <tr><td>SMTP Address</td><td>103.80.134.63</td></tr>
+      <tr><td>Subject</td><td>Free Coffee Voucher</td></tr>
+      <tr><td>Device Action</td><td>Allowed (email delivered)</td></tr>
+      <tr><td>Attachment</td><td>free-coffee.zip</td></tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Indicators of Compromise</div>
+    <table>
+      <tr><th>Type</th><th>Value</th><th>Verdict</th></tr>
+      <tr><td>Sender domain</td><td>coffeeshooop.com</td><td class="verdict-cell verdict-m">Malicious</td></tr>
+      <tr><td>SMTP IP</td><td>103.80.134.63</td><td class="verdict-cell verdict-s">Suspicious</td></tr>
+      <tr><td>ZIP hash (SHA256)</td><td><code>6f33ae4b...fb389</code></td><td class="verdict-cell verdict-m">Malicious</td></tr>
+      <tr><td>EXE hash (SHA256)</td><td><code>cd903ad2...fb866</code></td><td class="verdict-cell verdict-m">Malicious</td></tr>
+      <tr><td>Executable</td><td>coffee.exe</td><td class="verdict-cell verdict-m">Trojan.AsyncRAT/MSIL</td></tr>
+      <tr><td>C2 IP</td><td>37.120.233.226</td><td class="verdict-cell verdict-m">Malicious (Romania)</td></tr>
+      <tr><td>Download URL</td><td><code>hxxps://files[-]ld[.]s3[.]amazonaws[.]com/...</code></td><td class="verdict-cell verdict-m">Malicious</td></tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Investigation Walkthrough</div>
+    <h3>1. Initial Alert Review</h3>
+    <p>I began by reviewing all key metadata: event time, SMTP address, sender email, recipient, subject line, and device action. The subject "Free Coffee Voucher" immediately raised suspicion — a free reward theme is a well-known social engineering technique. The device action was marked as <strong>Allowed</strong>, meaning the email bypassed security controls and reached the user's mailbox.</p>
+    <h3>2. Email & Attachment Analysis</h3>
+    <p>The Email Security section confirmed an attachment named <strong>free-coffee.zip</strong>. I checked the SMTP address (103.80.134.63) on <strong>VirusTotal</strong> — returned suspicious. Hybrid Analysis confirmed prior malicious activity on the file hash. Hash verification on VirusTotal confirmed the ZIP as <strong>malicious</strong>.</p>
+    <h3>3. Payload Analysis</h3>
+    <p>Analysis of ZIP contents revealed an embedded executable <strong>coffee.exe</strong>, a hardcoded C2 address <strong>37.120.233.226</strong>, and malware family identified as <strong>Trojan.AsyncRAT/MSIL</strong> — a Remote Access Trojan designed to establish a persistent backdoor.</p>
+    <h3>4. Network Log Analysis</h3>
+    <p>Filtering network logs by host IP 172.16.20.151 confirmed <strong>outbound connections to 37.120.233.226</strong>, confirming active C2 communication. Log review also revealed the download URL used to retrieve the payload.</p>
+    <h3>5. EDR & Endpoint Analysis</h3>
+    <p>EDR telemetry confirmed: network activity to the C2 IP, browser history showing URL access, and <strong>coffee.exe was executed</strong>. Full host compromise was confirmed across all three data sources.</p>
+    <h3>6. Containment</h3>
+    <p>Deleted the malicious email from the mailbox. Immediately <strong>contained the host via EDR</strong> to stop C2 communication and prevent lateral movement.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Attack Flow</div>
+    <div class="flow-box">
+      <pre>Phishing email delivered (<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="7a1c081f1f3a19151c1c1f1f09121515150a54191517">[email&#160;protected]</a>)
+        ↓
+User receives "Free Coffee Voucher" — device action: Allowed
+        ↓
+User downloads free-coffee.zip from embedded URL
+        ↓
+User extracts and executes coffee.exe
+        ↓
+Trojan.AsyncRAT/MSIL establishes C2 communication
+        ↓
+Outbound connection to 37.120.233.226 (Romania) confirmed
+        ↓
+Host contained via EDR</pre>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">MITRE ATT&CK Mapping</div>
+    <table>
+      <tr><th>Technique ID</th><th>Name</th><th>Description</th></tr>
+      <tr><td><span class="mitre-tag">T1566.001</span></td><td>Spearphishing Attachment</td><td>Malicious ZIP delivered via email</td></tr>
+      <tr><td><span class="mitre-tag">T1204.002</span></td><td>User Execution: Malicious File</td><td>User executed coffee.exe</td></tr>
+      <tr><td><span class="mitre-tag">T1105</span></td><td>Ingress Tool Transfer</td><td>Payload downloaded from S3 URL</td></tr>
+      <tr><td><span class="mitre-tag">T1071</span></td><td>Application Layer Protocol</td><td>C2 communication over standard protocol</td></tr>
+      <tr><td><span class="mitre-tag">T1059</span></td><td>Command Execution</td><td>AsyncRAT command execution behavior</td></tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Verdict</div>
+    <div class="verdict-box">
+      <div class="v-label">Final Classification</div>
+      <div class="v-text">True Positive — Confirmed Compromise</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Recommendations</div>
+    <ul class="rec-list">
+      <li>Block C2 IP 37.120.233.226 on firewall and EDR</li>
+      <li>Block sender domain coffeeshooop.com in email gateway</li>
+      <li>Remove all malicious files (free-coffee.zip, coffee.exe) from the system</li>
+      <li>Reset credentials of affected user <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="aaeccfc6c3d2eac6cfded9cecfcccfc4ce84c3c5">[email&#160;protected]</a></li>
+      <li>Perform full endpoint forensics to identify persistence mechanisms</li>
+      <li>Monitor network logs for lateral movement indicators</li>
+      <li>Conduct phishing awareness training for all users</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Key Learnings</div>
+    <ul class="learning-list">
+      <li><strong>Analyze the entire attack chain.</strong> A phishing attack can escalate from a simple email to full system compromise quickly — focusing on just one indicator misses the full picture.</li>
+      <li><strong>Validate hashes across multiple platforms.</strong> Using both VirusTotal and Hybrid Analysis provides stronger confidence in verdicts than a single source alone.</li>
+      <li><strong>Log correlation is essential.</strong> No single data source confirmed the compromise — combining email security, EDR, and network logs was critical to building the full picture.</li>
+      <li><strong>Device action "Allowed" means the user is the last defense.</strong> When email security passes a malicious email through, user awareness training becomes the critical control.</li>
+      <li><strong>Contain quickly.</strong> Recognizing AsyncRAT C2 behaviors and isolating the host fast prevents lateral movement and further damage.</li>
+    </ul>
+  </div>
+
+</div>
+
+<footer><p>John Mark Piedad · <a href="index.html">Back to Portfolio</a></p></footer>
+
+<a href="https://github.com/piedad-johnmark/portfolio-projects/blob/781fe7ddf80f2370d224f800335cbb2796f97c69/letsdefend-labs/SOC282-phishing-alert-analysis.md" target="_blank" style="position:fixed;bottom:2rem;right:2rem;z-index:200;display:flex;align-items:center;gap:.6rem;background:#f0b429;color:#000;font-family:Inter,sans-serif;font-size:13px;font-weight:700;padding:.7rem 1.25rem;border-radius:6px;text-decoration:none;box-shadow:0 4px 20px rgba(240,180,41,0.3);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>View on GitHub</a>
+
+</body>
+</html>

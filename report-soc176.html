@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SOC176 — RDP Brute Force | John Mark Piedad</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0a0a0a;--surface:#111;--card:#141414;--border:#2a2a2a;--gold:#f0b429;--gold-bg:rgba(240,180,41,0.08);--gold-border:rgba(240,180,41,0.25);--text:#e8e8e8;--muted:#888;--muted2:#555;--white:#fff;--grid:rgba(255,255,255,0.025)}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-weight:400;line-height:1.7;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:60px 60px;pointer-events:none;z-index:0}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;justify-content:space-between;align-items:center;padding:1rem 2.5rem;background:rgba(10,10,10,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+.nav-brand{display:flex;align-items:center;gap:.6rem;text-decoration:none}.nav-brand svg{width:22px;height:22px}.nav-brand-text{font-size:14px;font-weight:700;color:var(--white);letter-spacing:.05em}
+.nav-back{font-size:13px;font-weight:500;color:var(--muted);text-decoration:none;display:flex;align-items:center;gap:.4rem;transition:color .2s}.nav-back:hover{color:var(--gold)}.nav-back svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2}
+.hero{padding:8rem 2rem 4rem;max-width:900px;margin:0 auto;position:relative;z-index:1}
+.breadcrumb{font-size:12px;color:var(--muted2);margin-bottom:1.5rem;display:flex;align-items:center;gap:.5rem}.breadcrumb a{color:var(--muted);text-decoration:none;transition:color .2s}.breadcrumb a:hover{color:var(--gold)}.breadcrumb span{color:var(--muted2)}
+.report-badge{display:inline-flex;align-items:center;gap:.5rem;font-size:11px;font-weight:700;letter-spacing:.08em;padding:.3rem .9rem;border-radius:3px;margin-bottom:1.25rem;background:var(--gold-bg);color:var(--gold);border:1px solid var(--gold-border)}.badge-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+h1{font-size:clamp(1.8rem,4vw,2.8rem);font-weight:800;color:var(--white);line-height:1.15;margin-bottom:1rem}h1 span{color:var(--gold)}
+.hero-underline{width:60px;height:2px;background:var(--gold);margin-bottom:1.5rem}
+.meta-row{display:flex;flex-wrap:wrap;gap:.75rem;margin-bottom:2rem}
+.meta-pill{font-size:12px;font-weight:500;padding:.3rem .85rem;border-radius:20px;border:1px solid var(--border);color:var(--muted);background:var(--card)}.meta-pill.high{color:#f97316;border-color:rgba(249,115,22,0.3);background:rgba(249,115,22,0.08)}.meta-pill.platform{color:var(--gold);border-color:var(--gold-border);background:var(--gold-bg)}
+.content{max-width:900px;margin:0 auto;padding:0 2rem 6rem;position:relative;z-index:1}
+.section{margin-bottom:2.5rem}
+.section-title{font-size:13px;font-weight:700;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;margin-bottom:1rem;display:flex;align-items:center;gap:.6rem}.section-title::before{content:'';display:inline-block;width:16px;height:1px;background:var(--gold)}
+h3{font-size:.95rem;font-weight:600;color:var(--gold);margin:1.25rem 0 .5rem}
+p{font-size:.9rem;color:var(--muted);line-height:1.85;margin-bottom:.85rem}p strong{color:var(--text);font-weight:600}
+.summary-box{background:var(--card);border:1px solid var(--border);border-left:3px solid var(--gold);border-radius:6px;padding:1.5rem;margin-bottom:2rem}.summary-box p{margin:0;font-size:.92rem;line-height:1.85;color:var(--text)}
+table{width:100%;border-collapse:collapse;margin-bottom:1.5rem;font-size:.85rem;background:var(--card);border:1px solid var(--border);border-radius:6px;overflow:hidden}
+th{text-align:left;font-size:11px;font-weight:700;color:var(--muted2);letter-spacing:.08em;text-transform:uppercase;padding:.6rem 1rem;border-bottom:1px solid var(--border);background:var(--surface)}
+td{padding:.65rem 1rem;border-bottom:1px solid rgba(42,42,42,0.5);color:var(--muted);vertical-align:top}td:first-child{color:var(--text);font-weight:500;white-space:nowrap}tr:last-child td{border-bottom:none}
+.verdict-cell{font-weight:600}.verdict-m{color:#ef4444}.verdict-s{color:#f97316}
+code{font-family:'Courier New',monospace;background:var(--surface);border:1px solid var(--border);border-radius:4px;font-size:.82rem;padding:.15rem .5rem;color:var(--gold)}
+pre{font-family:'Courier New',monospace;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:1.25rem;overflow-x:auto;line-height:1.7;margin-bottom:1.5rem;color:var(--text);font-size:.82rem}
+.flow-box{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:1.5rem;margin-bottom:1.5rem}.flow-box pre{background:none;border:none;padding:0;margin:0;color:var(--text)}
+.mitre-tag{display:inline-block;font-size:11px;font-weight:600;padding:.2rem .6rem;background:var(--gold-bg);color:var(--gold);border:1px solid var(--gold-border);border-radius:3px;margin:.2rem .2rem 0 0}
+.verdict-box{background:var(--card);border:1px solid var(--gold-border);border-radius:6px;padding:1.5rem;margin-bottom:1.5rem;text-align:center}.verdict-box .v-label{font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--muted2);text-transform:uppercase;margin-bottom:.5rem}.verdict-box .v-text{font-size:1.05rem;font-weight:700;color:var(--gold)}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.5rem}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:1.25rem;text-align:center}
+.stat-num{font-size:2rem;font-weight:800;color:var(--gold);line-height:1}
+.stat-label{font-size:11px;font-weight:600;color:var(--muted2);letter-spacing:.06em;margin-top:.3rem;text-transform:uppercase}
+.rec-list{list-style:none;display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.5rem}.rec-list li{display:flex;align-items:flex-start;gap:.75rem;font-size:.88rem;color:var(--muted);padding:.6rem .9rem;background:var(--card);border:1px solid var(--border);border-radius:4px}.rec-list li::before{content:'→';color:var(--gold);font-weight:700;flex-shrink:0}
+.learning-list{list-style:none;display:flex;flex-direction:column;gap:.75rem;margin-bottom:1.5rem}.learning-list li{padding:1rem 1.25rem;background:var(--card);border:1px solid var(--border);border-left:2px solid var(--gold);border-radius:0 4px 4px 0;font-size:.88rem;color:var(--muted);line-height:1.75}.learning-list li strong{color:var(--text);display:block;margin-bottom:.2rem}
+.gallery-link-btn{display:inline-flex;align-items:center;gap:.6rem;font-size:13px;font-weight:600;padding:.65rem 1.4rem;border-radius:6px;border:1.5px solid var(--gold);color:var(--gold);background:var(--gold-bg);text-decoration:none;transition:all .2s;margin-bottom:2rem}
+.gallery-link-btn:hover{background:var(--gold);color:#000}
+footer{border-top:1px solid var(--border);padding:2rem;text-align:center;position:relative;z-index:1}footer p{font-size:13px;color:var(--muted2)}footer a{color:var(--gold);text-decoration:none}
+@media(max-width:700px){nav{padding:1rem 1.5rem}.hero,.content{padding-left:1.25rem;padding-right:1.25rem}td:first-child{white-space:normal}.stats-row{grid-template-columns:1fr}}
+
+.gallery-link-btn{display:inline-flex;align-items:center;gap:.6rem;font-size:13px;font-weight:600;padding:.65rem 1.4rem;border-radius:6px;border:1.5px solid var(--gold);color:var(--gold);background:var(--gold-bg);text-decoration:none;transition:all .2s;margin-bottom:2rem}
+.gallery-link-btn:hover{background:var(--gold);color:#000}
+</style>
+</head>
+<body>
+<nav>
+  <a class="nav-brand" href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="#f0b429" stroke-width="1.8"><path d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V7L12 2z"/></svg><span class="nav-brand-text">JOHN MARK</span></a>
+  <a class="nav-back" href="index.html#labs"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back to Labs</a>
+</nav>
+
+<div class="hero">
+  <div class="breadcrumb"><a href="index.html">Home</a><span>/</span><a href="index.html#labs">Labs</a><span>/</span><span>SOC176</span></div>
+  <div class="report-badge"><span class="badge-dot"></span>TRUE POSITIVE</div>
+  <h1>SOC176 — RDP Brute Force:<br><span>Unauthorized Access Confirmed</span></h1>
+  <div class="hero-underline"></div>
+  <div class="meta-row">
+    <span class="meta-pill platform">LetsDefend</span>
+    <span class="meta-pill high">High Severity</span>
+    <span class="meta-pill">Brute Force</span>
+    <span class="meta-pill">RDP</span>
+    <span class="meta-pill">Event Logs</span>
+    <span class="meta-pill">AbuseIPDB</span>
+  </div>
+</div>
+
+<div class="content">
+  <a href="gallery-soc176.html" class="gallery-link-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>View Walkthrough Screenshots (26)</a>
+
+  <div class="section">
+    <div class="section-title">Summary</div>
+    <div class="summary-box">
+      <p>An external IP (<strong>218.92.0.56</strong>) launched a brute force attack against the RDP service (port 3389) of host <strong>Matthew</strong> (172.16.17.148). After <strong>14 consecutive failed login attempts</strong> across multiple usernames, the attacker successfully authenticated as user <strong>matthew</strong>. The firewall permitted all traffic throughout. The host was immediately isolated via EDR upon confirmation of unauthorized access.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Attack at a Glance</div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-num">14</div><div class="stat-label">Failed Logins (4625)</div></div>
+      <div class="stat-card"><div class="stat-num">1</div><div class="stat-label">Successful Login (4624)</div></div>
+      <div class="stat-card"><div class="stat-num">3389</div><div class="stat-label">Target Port (RDP)</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Alert Details</div>
+    <table>
+      <tr><th>Field</th><th>Value</th></tr>
+      <tr><td>Hostname</td><td>Matthew</td></tr>
+      <tr><td>Destination IP</td><td>172.16.17.148</td></tr>
+      <tr><td>Source IP</td><td>218.92.0.56</td></tr>
+      <tr><td>Protocol / Port</td><td>RDP / TCP 3389</td></tr>
+      <tr><td>Alert Timestamp</td><td>Mar 07, 2024, 11:44 AM</td></tr>
+      <tr><td>Firewall Action</td><td>Allowed</td></tr>
+      <tr><td>Compromised Account</td><td>matthew</td></tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Indicators of Compromise</div>
+    <table>
+      <tr><th>Type</th><th>Value</th><th>Verdict</th></tr>
+      <tr><td>Source IP</td><td>218.92.0.56</td><td class="verdict-cell verdict-m">Malicious</td></tr>
+      <tr><td>Target port</td><td>TCP 3389 (RDP)</td><td class="verdict-cell verdict-m">Brute forced</td></tr>
+      <tr><td>Compromised account</td><td>matthew</td><td class="verdict-cell verdict-m">Credential guessed</td></tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Investigation Walkthrough</div>
+    <h3>1. Initial Alert Review</h3>
+    <p>Documented all key metadata: hostname (Matthew), source IP (218.92.0.56), destination IP (172.16.17.148), protocol (RDP/3389), and timestamp. External RDP traffic immediately raised suspicion of a brute force attempt.</p>
+    <h3>2. IP Reputation — All Platforms Confirmed Malicious</h3>
+    <p>Checked 218.92.0.56 on VirusTotal, AbuseIPDB, and LetsDefend TI. <strong>All three returned malicious verdicts</strong>, confirming the IP as a known attack source with no ambiguity.</p>
+    <h3>3. Authentication Log Analysis</h3>
+    <p>Filtered logs by source and destination IP. Identified a clear brute force pattern targeting multiple usernames: <strong>matthew, sysadmin, admin, guest</strong>.</p>
+    <table>
+      <tr><th>Event ID</th><th>Event Type</th><th>Count</th></tr>
+      <tr><td>4625</td><td>Failed logon</td><td>14</td></tr>
+      <tr><td>4624</td><td>Successful logon</td><td>1</td></tr>
+    </table>
+    <h3>4. Scope Assessment</h3>
+    <p>Checked if other hosts were targeted by the same IP. Log analysis confirmed <strong>only host Matthew was affected</strong> — targeted attack, not a broad scan.</p>
+    <h3>5. Successful Login Confirmed</h3>
+    <p>Event ID <strong>4624</strong> confirmed a successful logon for user <code>matthew</code> from the external IP. The firewall was marked <strong>Allowed</strong> throughout — no network controls blocked the attack.</p>
+    <h3>6. Containment</h3>
+    <p>Immediately <strong>isolated host Matthew via EDR</strong> to terminate the attacker's session, prevent lateral movement, and stop post-exploitation activity.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Attack Flow</div>
+    <div class="flow-box">
+      <pre>External attacker (218.92.0.56)
+        ↓
+RDP brute force against port 3389 on 172.16.17.148
+        ↓
+14 failed login attempts (Event ID 4625)
+Targets: matthew, sysadmin, admin, guest
+        ↓
+Firewall action: Allowed throughout
+        ↓
+1 successful login — user: matthew (Event ID 4624)
+        ↓
+Unauthorized RDP access confirmed
+        ↓
+Host isolated via EDR</pre>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">MITRE ATT&CK Mapping</div>
+    <table>
+      <tr><th>Technique ID</th><th>Name</th><th>Description</th></tr>
+      <tr><td><span class="mitre-tag">T1110</span></td><td>Brute Force</td><td>14 repeated failed login attempts over RDP</td></tr>
+      <tr><td><span class="mitre-tag">T1110.001</span></td><td>Password Guessing</td><td>Attacker guessed credentials for user matthew</td></tr>
+      <tr><td><span class="mitre-tag">T1021.001</span></td><td>Remote Desktop Protocol</td><td>RDP used as the access vector</td></tr>
+      <tr><td><span class="mitre-tag">T1078</span></td><td>Valid Accounts</td><td>Successful login using guessed valid credentials</td></tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Verdict</div>
+    <div class="verdict-box">
+      <div class="v-label">Final Classification</div>
+      <div class="v-text">True Positive — Confirmed Unauthorized Access</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Recommendations</div>
+    <ul class="rec-list">
+      <li>Immediately reset password for user matthew</li>
+      <li>Block source IP 218.92.0.56 at the firewall and perimeter</li>
+      <li>Disable public-facing RDP — use a VPN or jump server instead</li>
+      <li>Enable Multi-Factor Authentication (MFA) for all RDP access</li>
+      <li>Implement account lockout after 5 failed attempts (Event ID 4625)</li>
+      <li>Monitor for Event ID 4625 spikes as an early brute force detection signal</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Key Learnings</div>
+    <ul class="learning-list">
+      <li><strong>Brute force attacks are patient.</strong> 14 attempts before success shows that weak or common passwords will eventually be guessed given enough time.</li>
+      <li><strong>Windows Event IDs 4624/4625 are fundamental.</strong> Knowing these by heart is essential for detecting RDP attacks quickly in any SOC role.</li>
+      <li><strong>Exposed RDP is a critical risk.</strong> Allowing RDP from the internet without MFA or lockout policies is an easily exploitable attack surface.</li>
+      <li><strong>Multi-source TI builds confidence.</strong> All three platforms confirming the IP removed all doubt and accelerated the triage decision.</li>
+      <li><strong>Speed of containment matters.</strong> Every minute after a confirmed successful login increases lateral movement risk.</li>
+    </ul>
+  </div>
+</div>
+  <div class="section" id="gallery-section" style="display:none">
+    <div class="section-title">Walkthrough Screenshots</div>
+    <div class="gal-grid">
+      <div class="gal-item" onclick="openLightbox(0)">
+        <div class="gal-placeholder">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span>Screenshot 1</span>
+        </div>
+      </div>
+      <div class="gal-item" onclick="openLightbox(1)">
+        <div class="gal-placeholder">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span>Screenshot 2</span>
+        </div>
+      </div>
+      <div class="gal-item" onclick="openLightbox(2)">
+        <div class="gal-placeholder">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span>Screenshot 3</span>
+        </div>
+      </div>
+      <div class="gal-item" onclick="openLightbox(3)">
+        <div class="gal-placeholder">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span>Screenshot 4</span>
+        </div>
+      </div>
+      <div class="gal-item" onclick="openLightbox(4)">
+        <div class="gal-placeholder">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span>Screenshot 5</span>
+        </div>
+      </div>
+      <div class="gal-item" onclick="openLightbox(5)">
+        <div class="gal-placeholder">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span>Screenshot 6</span>
+        </div>
+      </div>
+      <div class="gal-item" onclick="openLightbox(6)">
+        <div class="gal-placeholder">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span>Screenshot 7</span>
+        </div>
+      </div>
+      <div class="gal-item" onclick="openLightbox(7)">
+        <div class="gal-placeholder">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span>Screenshot 8</span>
+        </div>
+      </div>
+      <div class="gal-item" onclick="openLightbox(8)">
+        <div class="gal-placeholder">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span>Screenshot 9</span>
+        </div>
+      </div>
+      <div class="gal-item" onclick="openLightbox(9)">
+        <div class="gal-placeholder">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span>Screenshot 10</span>
+        </div>
+      </div>
+      <div class="gal-item" onclick="openLightbox(10)">
+        <div class="gal-placeholder">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span>Screenshot 11</span>
+        </div>
+      </div>
+      <div class="gal-item" onclick="openLightbox(11)">
+        <div class="gal-placeholder">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span>Screenshot 12</span>
+        </div>
+      </div>
+      <div class="gal-item" onclick="openLightbox(12)">
+        <div class="gal-placeholder">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span>Screenshot 13</span>
+        </div>
+      </div>
+      <div class="gal-item" onclick="openLightbox(13)">
+        <div class="gal-placeholder">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span>Screenshot 14</span>
+        </div>
+      </div>
+      <div class="gal-item" onclick="openLightbox(14)">
+        <div class="gal-placeholder">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span>Screenshot 15</span>
+        </div>
+      </div>
+      <div class="gal-item" onclick="openLightbox(15)">
+        <div class="gal-placeholder">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span>Screenshot 16</span>
+        </div>
+      </div>
+      <div class="gal-item" onclick="openLightbox(16)">
+        <div class="gal-placeholder">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span>Screenshot 17</span>
+        </div>
+      </div>
+      <div class="gal-item" onclick="openLightbox(17)">
+        <div class="gal-placeholder">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span>Screenshot 18</span>
+        </div>
+      </div>
+      <div class="gal-item" onclick="openLightbox(18)">
+        <div class="gal-placeholder">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span>Screenshot 19</span>
+        </div>
+      </div>
+      <div class="gal-item" onclick="openLightbox(19)">
+        <div class="gal-placeholder">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span>Screenshot 20</span>
+        </div>
+      </div>
+      <div class="gal-item" onclick="openLightbox(20)">
+        <div class="gal-placeholder">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span>Screenshot 21</span>
+        </div>
+      </div>
+      <div class="gal-item" onclick="openLightbox(21)">
+        <div class="gal-placeholder">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span>Screenshot 22</span>
+        </div>
+      </div>
+      <div class="gal-item" onclick="openLightbox(22)">
+        <div class="gal-placeholder">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span>Screenshot 23</span>
+        </div>
+      </div>
+      <div class="gal-item" onclick="openLightbox(23)">
+        <div class="gal-placeholder">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span>Screenshot 24</span>
+        </div>
+      </div>
+      <div class="gal-item" onclick="openLightbox(24)">
+        <div class="gal-placeholder">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span>Screenshot 25</span>
+        </div>
+      </div>
+      <div class="gal-item" onclick="openLightbox(25)">
+        <div class="gal-placeholder">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span>Screenshot 26</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="lightbox" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:999;align-items:center;justify-content:center;flex-direction:column;">
+    <button onclick="closeLightbox()" style="position:absolute;top:1.5rem;right:1.5rem;background:none;border:none;color:#f0b429;font-size:1.5rem;cursor:pointer;font-family:Inter,sans-serif;">✕</button>
+    <button onclick="prevImg()" style="position:absolute;left:1.5rem;top:50%;transform:translateY(-50%);background:none;border:none;color:#f0b429;font-size:2rem;cursor:pointer;">&#8249;</button>
+    <button onclick="nextImg()" style="position:absolute;right:1.5rem;top:50%;transform:translateY(-50%);background:none;border:none;color:#f0b429;font-size:2rem;cursor:pointer;">&#8250;</button>
+    <div id="lb-placeholder" style="width:480px;height:300px;background:#141414;border:1px dashed #2a2a2a;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#f0b429" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      <span id="lb-caption" style="font-family:Inter,sans-serif;font-size:13px;color:#888;"></span>
+      <span style="font-family:Inter,sans-serif;font-size:11px;color:#555;">Replace with: screenshots/soc176-XX.png</span>
+    </div>
+  </div>
+
+<style>
+.gal-btn{display:inline-flex;align-items:center;gap:.6rem;font-family:Inter,sans-serif;font-size:13px;font-weight:600;padding:.65rem 1.4rem;border-radius:6px;border:1.5px solid #f0b429;color:#f0b429;background:rgba(240,180,41,0.08);cursor:pointer;text-decoration:none;transition:all .2s;margin-bottom:2rem}
+.gal-btn:hover{background:#f0b429;color:#000}
+.gal-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2}
+.gal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.75rem;margin-bottom:1.5rem}
+.gal-item{border:1px solid #2a2a2a;border-radius:6px;overflow:hidden;cursor:pointer;transition:all .2s;aspect-ratio:16/10}
+.gal-item:hover{border-color:rgba(240,180,41,0.4);transform:translateY(-2px)}
+.gal-placeholder{width:100%;height:100%;background:#141414;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.4rem;color:#555}
+.gal-placeholder svg{width:28px;height:28px}
+.gal-placeholder span{font-family:Inter,sans-serif;font-size:11px;color:#555}
+</style>
+
+<script>
+const imgs = [
+    {src: "screenshots/soc176-01.png", caption: "Screenshot 1 of 26"},
+    {src: "screenshots/soc176-02.png", caption: "Screenshot 2 of 26"},
+    {src: "screenshots/soc176-03.png", caption: "Screenshot 3 of 26"},
+    {src: "screenshots/soc176-04.png", caption: "Screenshot 4 of 26"},
+    {src: "screenshots/soc176-05.png", caption: "Screenshot 5 of 26"},
+    {src: "screenshots/soc176-06.png", caption: "Screenshot 6 of 26"},
+    {src: "screenshots/soc176-07.png", caption: "Screenshot 7 of 26"},
+    {src: "screenshots/soc176-08.png", caption: "Screenshot 8 of 26"},
+    {src: "screenshots/soc176-09.png", caption: "Screenshot 9 of 26"},
+    {src: "screenshots/soc176-10.png", caption: "Screenshot 10 of 26"},
+    {src: "screenshots/soc176-11.png", caption: "Screenshot 11 of 26"},
+    {src: "screenshots/soc176-12.png", caption: "Screenshot 12 of 26"},
+    {src: "screenshots/soc176-13.png", caption: "Screenshot 13 of 26"},
+    {src: "screenshots/soc176-14.png", caption: "Screenshot 14 of 26"},
+    {src: "screenshots/soc176-15.png", caption: "Screenshot 15 of 26"},
+    {src: "screenshots/soc176-16.png", caption: "Screenshot 16 of 26"},
+    {src: "screenshots/soc176-17.png", caption: "Screenshot 17 of 26"},
+    {src: "screenshots/soc176-18.png", caption: "Screenshot 18 of 26"},
+    {src: "screenshots/soc176-19.png", caption: "Screenshot 19 of 26"},
+    {src: "screenshots/soc176-20.png", caption: "Screenshot 20 of 26"},
+    {src: "screenshots/soc176-21.png", caption: "Screenshot 21 of 26"},
+    {src: "screenshots/soc176-22.png", caption: "Screenshot 22 of 26"},
+    {src: "screenshots/soc176-23.png", caption: "Screenshot 23 of 26"},
+    {src: "screenshots/soc176-24.png", caption: "Screenshot 24 of 26"},
+    {src: "screenshots/soc176-25.png", caption: "Screenshot 25 of 26"},
+    {src: "screenshots/soc176-26.png", caption: "Screenshot 26 of 26"},
+];
+let cur = 0;
+function openLightbox(i){cur=i;document.getElementById('lightbox').style.display='flex';updateLb()}
+function closeLightbox(){document.getElementById('lightbox').style.display='none'}
+function prevImg(){cur=(cur-1+imgs.length)%imgs.length;updateLb()}
+function nextImg(){cur=(cur+1)%imgs.length;updateLb()}
+function updateLb(){document.getElementById('lb-caption').textContent=imgs[cur].caption}
+document.addEventListener('keydown',function(e){if(e.key==='ArrowRight')nextImg();if(e.key==='ArrowLeft')prevImg();if(e.key==='Escape')closeLightbox()})
+</script>
+
+
+<footer><p>John Mark Piedad · <a href="index.html">Back to Portfolio</a></p></footer>
+<a href="https://github.com/piedad-johnmark/portfolio-projects/blob/781fe7ddf80f2370d224f800335cbb2796f97c69/letsdefend-labs/SOC176-rdp-brute-force-analysis.md" target="_blank" style="position:fixed;bottom:2rem;right:2rem;z-index:200;display:flex;align-items:center;gap:.6rem;background:#f0b429;color:#000;font-family:Inter,sans-serif;font-size:13px;font-weight:700;padding:.7rem 1.25rem;border-radius:6px;text-decoration:none;box-shadow:0 4px 20px rgba(240,180,41,0.3);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>View on GitHub</a>
+
+<script>function toggleGallery(){var s=document.getElementById("gallery-section");s.style.display=s.style.display==="none"?"block":"none";}</script>
+</body>
+</html>

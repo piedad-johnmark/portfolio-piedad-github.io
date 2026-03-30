@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SOC104 — Malware Detected | John Mark Piedad</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0a0a0a;--surface:#111;--card:#141414;--border:#2a2a2a;--gold:#f0b429;--gold-bg:rgba(240,180,41,0.08);--gold-border:rgba(240,180,41,0.25);--text:#e8e8e8;--muted:#888;--muted2:#555;--white:#fff;--green:#22c55e;--green-bg:rgba(34,197,94,0.1);--green-border:rgba(34,197,94,0.25);--grid:rgba(255,255,255,0.025)}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-weight:400;line-height:1.7;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:60px 60px;pointer-events:none;z-index:0}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;justify-content:space-between;align-items:center;padding:1rem 2.5rem;background:rgba(10,10,10,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+.nav-brand{display:flex;align-items:center;gap:.6rem;text-decoration:none}.nav-brand svg{width:22px;height:22px}.nav-brand-text{font-size:14px;font-weight:700;color:var(--white);letter-spacing:.05em}
+.nav-back{font-size:13px;font-weight:500;color:var(--muted);text-decoration:none;display:flex;align-items:center;gap:.4rem;transition:color .2s}.nav-back:hover{color:var(--gold)}.nav-back svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2}
+.hero{padding:8rem 2rem 4rem;max-width:900px;margin:0 auto;position:relative;z-index:1}
+.breadcrumb{font-size:12px;color:var(--muted2);margin-bottom:1.5rem;display:flex;align-items:center;gap:.5rem}.breadcrumb a{color:var(--muted);text-decoration:none;transition:color .2s}.breadcrumb a:hover{color:var(--gold)}.breadcrumb span{color:var(--muted2)}
+.report-badge{display:inline-flex;align-items:center;gap:.5rem;font-size:11px;font-weight:700;letter-spacing:.08em;padding:.3rem .9rem;border-radius:3px;margin-bottom:1.25rem;background:rgba(90,90,90,0.15);color:var(--muted);border:1px solid var(--border)}.badge-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+h1{font-size:clamp(1.8rem,4vw,2.8rem);font-weight:800;color:var(--white);line-height:1.15;margin-bottom:1rem}h1 span{color:var(--gold)}
+.hero-underline{width:60px;height:2px;background:var(--gold);margin-bottom:1.5rem}
+.meta-row{display:flex;flex-wrap:wrap;gap:.75rem;margin-bottom:2rem}
+.meta-pill{font-size:12px;font-weight:500;padding:.3rem .85rem;border-radius:20px;border:1px solid var(--border);color:var(--muted);background:var(--card)}.meta-pill.med{color:#eab308;border-color:rgba(234,179,8,0.3);background:rgba(234,179,8,0.08)}.meta-pill.platform{color:var(--gold);border-color:var(--gold-border);background:var(--gold-bg)}.meta-pill.fp{color:var(--green);border-color:var(--green-border);background:var(--green-bg)}
+.content{max-width:900px;margin:0 auto;padding:0 2rem 6rem;position:relative;z-index:1}
+.section{margin-bottom:2.5rem}
+.section-title{font-size:13px;font-weight:700;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;margin-bottom:1rem;display:flex;align-items:center;gap:.6rem}.section-title::before{content:'';display:inline-block;width:16px;height:1px;background:var(--gold)}
+h3{font-size:.95rem;font-weight:600;color:var(--gold);margin:1.25rem 0 .5rem}
+p{font-size:.9rem;color:var(--muted);line-height:1.85;margin-bottom:.85rem}p strong{color:var(--text);font-weight:600}
+.summary-box{background:var(--card);border:1px solid var(--border);border-left:3px solid var(--green);border-radius:6px;padding:1.5rem;margin-bottom:2rem}.summary-box p{margin:0;font-size:.92rem;line-height:1.85;color:var(--text)}
+table{width:100%;border-collapse:collapse;margin-bottom:1.5rem;font-size:.85rem;background:var(--card);border:1px solid var(--border);border-radius:6px;overflow:hidden}
+th{text-align:left;font-size:11px;font-weight:700;color:var(--muted2);letter-spacing:.08em;text-transform:uppercase;padding:.6rem 1rem;border-bottom:1px solid var(--border);background:var(--surface)}
+td{padding:.65rem 1rem;border-bottom:1px solid rgba(42,42,42,0.5);color:var(--muted);vertical-align:top}td:first-child{color:var(--text);font-weight:500;white-space:nowrap}tr:last-child td{border-bottom:none}
+.verdict-cell{font-weight:600}.verdict-c{color:var(--green)}.verdict-m{color:#ef4444}
+code{font-family:'Courier New',monospace;background:var(--surface);border:1px solid var(--border);border-radius:4px;font-size:.82rem;padding:.15rem .5rem;color:var(--gold)}
+.info-box{background:rgba(234,179,8,0.06);border:1px solid rgba(234,179,8,0.2);border-radius:6px;padding:1.25rem;margin-bottom:1.5rem}
+.info-box p{margin:0;font-size:.88rem;color:#d4a017;line-height:1.75}
+.verdict-box{background:var(--card);border:1px solid var(--green-border);border-radius:6px;padding:1.5rem;margin-bottom:1.5rem;text-align:center}.verdict-box .v-label{font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--muted2);text-transform:uppercase;margin-bottom:.5rem}.verdict-box .v-text{font-size:1.05rem;font-weight:700;color:var(--green)}
+.ti-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.75rem;margin-bottom:1.5rem}
+.ti-card{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:.9rem 1.1rem;display:flex;justify-content:space-between;align-items:center}
+.ti-name{font-size:.85rem;font-weight:600;color:var(--text)}.ti-clean{font-size:11px;font-weight:700;color:var(--green)}.ti-warn{font-size:11px;font-weight:700;color:#f97316}
+.rec-list{list-style:none;display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.5rem}.rec-list li{display:flex;align-items:flex-start;gap:.75rem;font-size:.88rem;color:var(--muted);padding:.6rem .9rem;background:var(--card);border:1px solid var(--border);border-radius:4px}.rec-list li::before{content:'→';color:var(--gold);font-weight:700;flex-shrink:0}
+.learning-list{list-style:none;display:flex;flex-direction:column;gap:.75rem;margin-bottom:1.5rem}.learning-list li{padding:1rem 1.25rem;background:var(--card);border:1px solid var(--border);border-left:2px solid var(--gold);border-radius:0 4px 4px 0;font-size:.88rem;color:var(--muted);line-height:1.75}.learning-list li strong{color:var(--text);display:block;margin-bottom:.2rem}
+footer{border-top:1px solid var(--border);padding:2rem;text-align:center;position:relative;z-index:1}footer p{font-size:13px;color:var(--muted2)}footer a{color:var(--gold);text-decoration:none}
+.gallery-link-btn{display:inline-flex;align-items:center;gap:.6rem;font-size:13px;font-weight:600;padding:.65rem 1.4rem;border-radius:6px;border:1.5px solid var(--gold);color:var(--gold);background:var(--gold-bg);text-decoration:none;transition:all .2s;margin-bottom:2rem}
+.gallery-link-btn:hover{background:var(--gold);color:#000}
+@media(max-width:700px){nav{padding:1rem 1.5rem}.hero,.content{padding-left:1.25rem;padding-right:1.25rem}td:first-child{white-space:normal}}
+</style>
+</head>
+<body>
+<nav>
+  <a class="nav-brand" href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="#f0b429" stroke-width="1.8"><path d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V7L12 2z"/></svg><span class="nav-brand-text">JOHN MARK</span></a>
+  <a class="nav-back" href="index.html#labs"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back to Labs</a>
+</nav>
+
+<div class="hero">
+  <div class="breadcrumb"><a href="index.html">Home</a><span>/</span><a href="index.html#labs">Labs</a><span>/</span><span>SOC104</span></div>
+  <div class="report-badge"><span class="badge-dot"></span>FALSE POSITIVE</div>
+  <h1>SOC104 — Malware Detected:<br><span>WinRAR Installer</span></h1>
+  <div class="hero-underline"></div>
+  <div class="meta-row">
+    <span class="meta-pill platform">LetsDefend</span>
+    <span class="meta-pill med">Medium Severity</span>
+    <span class="meta-pill fp">False Positive</span>
+    <span class="meta-pill">Threat Intel</span>
+    <span class="meta-pill">Hash Analysis</span>
+  </div>
+</div>
+
+<div class="content">
+  <a href="gallery-soc104.html" class="gallery-link-btn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+    View Walkthrough Screenshots (16)
+  </a>
+  <div class="section">
+    <div class="section-title">Summary</div>
+    <div class="summary-box">
+      <p>An alert flagged <strong>winrar600.exe</strong> on host SusieHost (172.16.17.5) as potential malware. Thorough investigation across VirusTotal, Hybrid Analysis, and LetsDefend TI returned <strong>clean results across the board</strong>. Log analysis showed no suspicious behavior. A notable finding was the <strong>offline EDR agent</strong> — flagged as a separate visibility gap requiring remediation. The alert was correctly closed as a <strong>False Positive</strong>.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Alert Details</div>
+    <table>
+      <tr><th>Field</th><th>Value</th></tr>
+      <tr><td>Hostname</td><td>SusieHost</td></tr>
+      <tr><td>Host IP</td><td>172.16.17.5</td></tr>
+      <tr><td>Filename</td><td>winrar600.exe</td></tr>
+      <tr><td>Device Action</td><td>Allowed (not quarantined)</td></tr>
+      <tr><td>EDR Agent Status</td><td>⚠ Down — visibility gap identified</td></tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Threat Intelligence Results</div>
+    <div class="ti-grid">
+      <div class="ti-card"><span class="ti-name">VirusTotal</span><span class="ti-clean">0/X — Clean</span></div>
+      <div class="ti-card"><span class="ti-name">Hybrid Analysis</span><span class="ti-clean">Whitelisted</span></div>
+      <div class="ti-card"><span class="ti-name">LetsDefend TI</span><span class="ti-clean">No matches</span></div>
+    </div>
+    <p>All three platforms independently returned clean or whitelisted results for both the file hash and download URL — providing high confidence in the false positive determination.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Investigation Walkthrough</div>
+    <h3>1. Initial Alert Review</h3>
+    <p>Documented hostname (SusieHost), source IP (172.16.17.5), filename (winrar600.exe), file hash, and timestamp. The filename appeared to reference a legitimate WinRAR installer, but full validation was required before drawing any conclusions.</p>
+    <h3>2. File Hash Analysis — VirusTotal</h3>
+    <p>Submitted the file hash to VirusTotal. Result: <strong>0 detections</strong> across all security vendors. No malicious signatures, behaviors, or community flags associated with the hash.</p>
+    <h3>3. Behavioral Analysis — Hybrid Analysis</h3>
+    <p>Submitted to Hybrid Analysis for dynamic behavioral analysis. File was returned as <strong>whitelisted</strong> — matched a known safe application profile. No suspicious process, network, or file system activity flagged.</p>
+    <h3>4. Log Analysis</h3>
+    <p>Reviewed system logs and identified a single download event for winrar600.exe. The download URL was checked on VirusTotal — returned <strong>clean</strong>. No suspicious log entries, unusual process executions, or abnormal network connections observed.</p>
+    <h3>5. EDR Analysis — Visibility Gap Found</h3>
+    <p>Attempted endpoint analysis via EDR but found the <strong>EDR agent on SusieHost was offline</strong>. This was flagged as a <strong>separate critical finding</strong> — a visibility gap that must be remediated regardless of the alert outcome.</p>
+    <div class="info-box"><p>⚠ Even though this alert is a false positive, the offline EDR agent is a real security risk that was flagged and escalated independently.</p></div>
+    <h3>6. Why This Alert Fired</h3>
+    <p>The alert was likely triggered by a <strong>heuristic or behavioral rule</strong> reacting to an external .exe download — expected behavior for security tools that err on the side of caution. The SOC analyst's role is to validate these alerts through evidence, not assumptions.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-title">MITRE ATT&CK Mapping</div>
+    <p>No MITRE ATT&CK techniques were identified. There is no evidence of malicious activity associated with this alert.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Verdict</div>
+    <div class="verdict-box">
+      <div class="v-label">Final Classification</div>
+      <div class="v-text">False Positive — Legitimate Software</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Recommendations</div>
+    <ul class="rec-list">
+      <li>Investigate and restore the offline EDR agent on SusieHost — endpoint visibility is critical</li>
+      <li>Whitelist the confirmed file hash to reduce future false positive alerts</li>
+      <li>Ensure all endpoints have active, healthy EDR agents — run a systematic check</li>
+      <li>Review detection rules that triggered this alert to reduce noise for known-safe installers</li>
+      <li>Implement an approved software list to distinguish sanctioned downloads from unauthorized ones</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Key Learnings</div>
+    <ul class="learning-list">
+      <li><strong>Not every "Malware Detected" alert is real.</strong> Correctly identifying false positives is just as important as catching threats — it keeps the team focused and reduces alert fatigue.</li>
+      <li><strong>Multi-source TI builds confidence in both directions.</strong> When VirusTotal, Hybrid Analysis, and LetsDefend TI all agree a file is clean, that convergence is meaningful evidence.</li>
+      <li><strong>Visibility gaps must be flagged.</strong> The offline EDR agent was a separate significant finding — even if the current alert is benign, the lack of endpoint visibility is a real risk.</li>
+      <li><strong>Evidence-based decisions over assumptions.</strong> The job of a SOC analyst is to follow the evidence — in this case, it clearly pointed to a legitimate file.</li>
+      <li><strong>False positives have real cost.</strong> Misclassifying a false positive wastes response resources and erodes team trust in the alerting system. Accurate classification is a core SOC skill.</li>
+    </ul>
+  </div>
+</div>
+
+<footer><p>John Mark Piedad · <a href="index.html">Back to Portfolio</a></p></footer>
+<a href="https://github.com/piedad-johnmark/portfolio-projects/blob/781fe7ddf80f2370d224f800335cbb2796f97c69/letsdefend-labs/SOC104-malware-detected-fp-analysis.md" target="_blank" style="position:fixed;bottom:2rem;right:2rem;z-index:200;display:flex;align-items:center;gap:.6rem;background:#f0b429;color:#000;font-family:Inter,sans-serif;font-size:13px;font-weight:700;padding:.7rem 1.25rem;border-radius:6px;text-decoration:none;box-shadow:0 4px 20px rgba(240,180,41,0.3);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>View on GitHub</a>
+</body>
+</html>
