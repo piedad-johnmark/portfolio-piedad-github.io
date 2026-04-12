@@ -39,7 +39,6 @@ body {
   overflow-x: hidden;
 }
 
-/* Grid background pattern */
 body::before {
   content: '';
   position: fixed; inset: 0;
@@ -94,17 +93,12 @@ nav {
   position: relative; z-index: 1;
 }
 
-/* Decorative shield icons */
-.deco-shield {
-  position: absolute;
-  opacity: 0.07;
-}
+.deco-shield { position: absolute; opacity: 0.07; }
 .deco-shield-left { left: 3%; top: 15%; width: 90px; }
 .deco-shield-right { right: 3%; bottom: 20%; width: 70px; }
 .deco-lock-right { right: 4%; top: 40%; width: 55px; opacity: 0.05; }
 .deco-lock-left { left: 4%; bottom: 15%; width: 55px; opacity: 0.05; }
 
-/* Avatar */
 .avatar-wrap {
   position: relative; margin-bottom: 2rem;
   width: 160px; height: 160px;
@@ -114,7 +108,6 @@ nav {
   border-radius: 50%;
   box-shadow: 0 0 40px rgba(240,180,41,0.5), 0 0 80px rgba(240,180,41,0.2);
   border: 2.5px solid var(--gold);
-  border-radius: 50%;
 }
 .avatar-circle {
   width: 160px; height: 160px;
@@ -124,10 +117,6 @@ nav {
   display: flex; align-items: center; justify-content: center;
   position: relative; z-index: 1;
   overflow: hidden;
-}
-.avatar-initials {
-  font-size: 2.8rem; font-weight: 700;
-  color: var(--gold); letter-spacing: -0.02em;
 }
 .avatar-img {
   width: 100%; height: 100%;
@@ -150,7 +139,7 @@ nav {
 }
 .hero-desc {
   font-size: 0.95rem; color: var(--muted);
-  max-width: 480px; margin: 0 auto 2.5rem;
+  max-width: 520px; margin: 0 auto 2.5rem;
 }
 .hero-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
 .btn {
@@ -164,7 +153,6 @@ nav {
 .btn-outline { background: transparent; color: var(--white); border: 1.5px solid var(--gold); }
 .btn-outline:hover { background: var(--gold-bg); transform: translateY(-1px); }
 
-/* Scroll mouse icon */
 .scroll-indicator {
   margin-top: 3rem;
   display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
@@ -189,11 +177,7 @@ nav {
 
 /* ── SECTIONS ── */
 section { position: relative; z-index: 1; }
-
-.section-inner {
-  max-width: 1100px; margin: 0 auto;
-  padding: 5rem 2rem;
-}
+.section-inner { max-width: 1100px; margin: 0 auto; padding: 5rem 2rem; }
 .section-title {
   font-size: clamp(1.8rem, 3vw, 2.4rem);
   font-weight: 800; color: var(--white);
@@ -202,8 +186,7 @@ section { position: relative; z-index: 1; }
 .section-title span { color: var(--gold); }
 .section-underline {
   width: 60px; height: 2px;
-  background: var(--gold);
-  margin: 0.75rem auto 3rem;
+  background: var(--gold); margin: 0.75rem auto 3rem;
 }
 .section-sub {
   text-align: center; color: var(--muted);
@@ -227,6 +210,21 @@ section { position: relative; z-index: 1; }
 .about-box p:last-child { margin-bottom: 0; color: var(--muted); }
 .about-box p a, .about-box p span { color: var(--gold); font-weight: 500; }
 
+/* ── TRAINING BADGE ── */
+.training-row {
+  display: flex; flex-wrap: wrap; gap: 0.75rem;
+  justify-content: center; margin-top: 0.5rem;
+}
+.training-badge {
+  display: flex; align-items: center; gap: 0.5rem;
+  border: 1px solid var(--gold-border);
+  background: var(--gold-bg);
+  border-radius: 6px;
+  padding: 0.45rem 1rem;
+  font-size: 0.82rem; font-weight: 600; color: var(--gold);
+}
+.training-badge svg { width: 14px; height: 14px; stroke: var(--gold); fill: none; stroke-width: 2; flex-shrink: 0; }
+
 .skills-title {
   font-size: 1.5rem; font-weight: 700;
   color: var(--white); text-align: center; margin-bottom: 0.4rem;
@@ -246,8 +244,7 @@ section { position: relative; z-index: 1; }
   background: var(--card);
   padding: 1.25rem 1.5rem;
   display: flex; align-items: center; gap: 1rem;
-  transition: all 0.25s;
-  cursor: default;
+  transition: all 0.25s; cursor: default;
 }
 .skill-card:hover {
   border-color: var(--gold-border);
@@ -303,10 +300,7 @@ section { position: relative; z-index: 1; }
   padding: 0.15rem 0.6rem; border-radius: 3px;
   letter-spacing: 0.04em; width: fit-content;
 }
-.lab-title {
-  font-size: 1rem; font-weight: 700;
-  color: var(--white); line-height: 1.3;
-}
+.lab-title { font-size: 1rem; font-weight: 700; color: var(--white); line-height: 1.3; }
 .lab-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.75; }
 .lab-skills-label {
   font-size: 10px; font-weight: 700;
@@ -321,9 +315,7 @@ section { position: relative; z-index: 1; }
   padding: 0.15rem 0.55rem; border-radius: 3px;
   letter-spacing: 0.03em;
 }
-.lab-btn {
-  margin-top: auto; padding-top: 1rem;
-}
+.lab-btn { margin-top: auto; padding-top: 1rem; }
 .lab-btn a {
   display: flex; align-items: center; justify-content: center; gap: 0.5rem;
   width: 100%; padding: 0.6rem;
@@ -333,11 +325,7 @@ section { position: relative; z-index: 1; }
   color: var(--white); text-decoration: none;
   transition: all 0.2s;
 }
-.lab-btn a:hover {
-  border-color: var(--gold);
-  color: var(--gold);
-  background: var(--gold-bg);
-}
+.lab-btn a:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-bg); }
 .lab-btn a svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
 
 /* ── CONTACT ── */
@@ -372,8 +360,7 @@ section { position: relative; z-index: 1; }
 /* ── FOOTER ── */
 footer {
   border-top: 1px solid var(--border);
-  padding: 2rem;
-  text-align: center;
+  padding: 2rem; text-align: center;
   position: relative; z-index: 1;
 }
 footer p { font-size: 13px; color: var(--muted2); }
@@ -418,7 +405,6 @@ footer span { color: var(--gold); }
 
 <!-- HERO -->
 <section id="home">
-  <!-- Decorative background icons -->
   <svg class="deco-shield deco-shield-left" viewBox="0 0 24 24" fill="none" stroke="#f0b429" stroke-width="1">
     <path d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V7L12 2z"/>
   </svg>
@@ -435,15 +421,16 @@ footer span { color: var(--gold); }
   <div class="avatar-wrap">
     <div class="avatar-glow"></div>
     <div class="avatar-circle">
-      <!-- Replace with: <img src="your-photo.jpg" alt="John Mark Piedad" class="avatar-img"> -->
       <img src="profile/profile2.jpg" alt="John Mark Piedad" class="avatar-img">
     </div>
   </div>
 
+  <!-- EDIT 1: Changed "Cybersecurity Enthusiast" to professional title -->
   <h1 class="hero-name">John Mark Piedad</h1>
-  <div class="hero-title">SOC Analyst / <span>Cybersecurity Enthusiast</span></div>
+  <div class="hero-title">SOC Analyst L1 — <span>Blue Team Operations</span></div>
   <div class="hero-underline"></div>
-  <p class="hero-desc">Hands-on experience analyzing security incidents and defending networks.</p>
+  <!-- EDIT 2: More specific hero description -->
+  <p class="hero-desc">Fresh graduate with 10+ hands-on blue team investigations — phishing, ransomware, RDP brute-force, and zero-day exploitation. Open to SOC Analyst L1 roles.</p>
   <div class="hero-btns">
     <a href="#labs" class="btn btn-gold">View My Work</a>
     <a href="#about" class="btn btn-outline">Learn More</a>
@@ -459,9 +446,35 @@ footer span { color: var(--gold); }
     <h2 class="section-title fade-up">About <span>Me</span></h2>
     <div class="section-underline"></div>
 
+    <!-- EDIT 3: Rewrote About Me to be specific and professional -->
     <div class="about-box fade-up">
-      <p>I'm a dedicated <span>SOC Analyst</span> with a passion for cybersecurity and threat intelligence. Through hands-on experience with the <a href="https://letsdefend.io" target="_blank">Let'sDefend</a> platform, I've developed strong skills in analyzing security incidents, investigating threats, and implementing defensive measures to protect networks and systems.</p>
-      <p>My approach combines technical expertise with analytical thinking to identify, investigate, and respond to security threats effectively. I'm committed to continuous learning and staying current with the latest cybersecurity trends and attack techniques.</p>
+      <p>I'm a <span>BS Information Technology graduate from New Era University</span> targeting SOC Analyst L1 roles in the Philippines. I've completed <span>7+ hands-on blue team investigations</span> across <a href="https://letsdefend.io" target="_blank">LetsDefend</a>, <a href="https://cyberdefenders.org/blue-team-labs/" target="_blank">CyberDefenders</a>, and <a href="https://tryhackme.com" target="_blank">TryHackMe</a> — covering phishing campaigns, ransomware attack chains, RDP brute-force, and Windows OLE RCE zero-day exploitation.</p>
+      <p>Each investigation is fully documented with IOC tables, MITRE ATT&CK mappings, and incident reports — the same output expected in a real SOC environment. I'm proficient in <span>SIEM-based alert triage</span>, <span>Wireshark traffic analysis</span>, <span>Sysmon and Windows Event Log correlation</span>, and <span>VirusTotal / Any.run threat enrichment</span>.</p>
+      <p>Currently pursuing <span>CompTIA Security+</span> and actively seeking opportunities to contribute to a 24/7 SOC team.</p>
+
+      <!-- EDIT 4: Training platforms displayed as badges -->
+      <div class="training-row" style="margin-top:1.2rem;">
+        <div class="training-badge">
+          <svg viewBox="0 0 24 24"><path d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V7L12 2z"/></svg>
+          LetsDefend — 6+ Closed Investigations
+        </div>
+        <div class="training-badge">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+          CyberDefenders — BlueSky Ransomware
+        </div>
+        <div class="training-badge">
+          <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          TryHackMe — SOC Level 1 Path ✓
+        </div>
+        <div class="training-badge">
+          <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          Google Cybersecurity Certificate ✓
+        </div>
+        <div class="training-badge" style="border-color:rgba(240,180,41,0.15); color: var(--muted);">
+          <svg viewBox="0 0 24 24" stroke="var(--muted)"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          CompTIA Security+ — In Progress
+        </div>
+      </div>
     </div>
 
     <div class="fade-up">
@@ -511,6 +524,27 @@ footer span { color: var(--gold); }
           <span class="skill-name">MITRE ATT&CK Mapping</span>
         </div>
 
+        <div class="skill-card">
+          <div class="skill-icon">
+            <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          </div>
+          <span class="skill-name">SIEM Alert Triage</span>
+        </div>
+
+        <div class="skill-card">
+          <div class="skill-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+          </div>
+          <span class="skill-name">Network Forensics</span>
+        </div>
+
+        <div class="skill-card">
+          <div class="skill-icon">
+            <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+          </div>
+          <span class="skill-name">IOC Extraction</span>
+        </div>
+
       </div>
     </div>
   </div>
@@ -521,7 +555,7 @@ footer span { color: var(--gold); }
   <div class="section-inner">
     <h2 class="section-title fade-up">SOC Lab <span>Projects</span></h2>
     <div class="section-underline"></div>
-    <p class="section-sub fade-up">Real-world security incident investigations completed on the <a href="https://letsdefend.io" target="_blank">Let'sDefend</a> platform and <a href="https://cyberdefenders.org/blue-team-labs/" target="_blank">CyberDefender.</a></p>
+    <p class="section-sub fade-up">Real-world security incident investigations completed on <a href="https://letsdefend.io" target="_blank">LetsDefend</a>, <a href="https://cyberdefenders.org/blue-team-labs/" target="_blank">CyberDefenders</a>, and <a href="https://tryhackme.com" target="_blank">TryHackMe</a>.</p>
 
     <div class="labs-grid fade-up">
 
@@ -657,14 +691,14 @@ footer span { color: var(--gold); }
         </div>
         <div class="lab-body">
           <span class="lab-badge">CD-BlueSky</span>
-          <div class="lab-title">CyberDefender BlueSky Ransomware Lab</div>
-          <div class="lab-desc">Analyzing ransomware behavior, file encryption, and containment strategies through full attack chain reconstruction using PCAP and EVTX.</div>
+          <div class="lab-title">CyberDefenders BlueSky Ransomware</div>
+          <div class="lab-desc">Full attack chain reconstruction — from initial access through encryption and exfiltration — using PCAP, EVTX, and memory forensics.</div>
           <div class="lab-skills-label">KEY SKILLS:</div>
           <div class="lab-tags">
             <span class="lab-tag">Ransomware Analysis</span>
-            <span class="lab-tag">Malware Containment</span>
+            <span class="lab-tag">Memory Forensics</span>
             <span class="lab-tag">Log Correlation</span>
-            <span class="lab-tag">MITRE ATT&CK Mapping</span>
+            <span class="lab-tag">MITRE ATT&CK</span>
           </div>
           <div class="lab-btn">
             <a href="report-bluesky.html">
@@ -684,11 +718,12 @@ footer span { color: var(--gold); }
   <div class="section-inner">
     <h2 class="section-title fade-up">Get In <span>Touch</span></h2>
     <div class="section-underline"></div>
-    <p class="section-sub fade-up">I'm always open to discussing cybersecurity opportunities, collaborations, or just connecting with fellow security enthusiasts.</p>
+    <p class="section-sub fade-up">Open to SOC Analyst L1 opportunities, collaborations, or just connecting with fellow defenders.</p>
 
     <div class="contact-grid fade-up">
 
-      <a href="piedadjohnmark05@gmail.com" class="contact-card">
+      <!-- EDIT 5: Fixed broken email link — changed to proper mailto: -->
+      <a href="mailto:piedadjohnmark05@gmail.com" class="contact-card">
         <div class="contact-icon">
           <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
         </div>
@@ -733,7 +768,7 @@ footer span { color: var(--gold); }
 </section>
 
 <footer>
-  <p>© 2025 <span>John Mark Piedad</span> · Open to SOC Analyst L1 opportunities</p>
+  <p>© 2026 <span>John Mark Piedad</span> · Open to SOC Analyst L1 opportunities</p>
 </footer>
 
 <script>
